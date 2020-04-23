@@ -7,7 +7,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
 /**
- * // TODO class description
+ * Indicator and Descriptor for simple-orm to map this method to a database field.
+ * Only applicable on getters with a return type of type {@link Enum}.
  *
  * @author Julian Drees
  * @since 23.04.2020

@@ -6,6 +6,7 @@ import de.juliandrees.simpleorm.exception.MethodMappingException;
 import de.juliandrees.simpleorm.type.MethodPrefix;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,26 +26,39 @@ class EntityAnalyzer {
     public EntityAnalyzer() { }
 
     public void analyzeClass(Class<?> clazz) {
-        MappedEntity mappedEntity = new MappedEntity(clazz);
         for (Method method : clazz.getMethods()) {
-            if (!this.isMappedColumn(method)) {
+            if (!method.getName().toLowerCase().startsWith(MethodPrefix.GET.name().toLowerCase()) ||
+                !this.isMappedColumn(method)) {
                 continue;
             }
-            Optional<MethodPrefix> optionalPrefix = MethodPrefix.getMethodPrefix(method.getName());
-            if (optionalPrefix.isEmpty()) {
-                throw new MethodMappingException("Method " + method.getName() + " (" + clazz.getSimpleName() + ") has no regular prefix");
-            }
 
-            String fieldName = method.getName().substring(optionalPrefix.get().name().length() - 1);
-            System.out.println(fieldName);
+            try {
+                Field field = this.getField(method, clazz);
+                if (field == null) {
+                    throw new MethodMappingException("No field found for getter " + method.getName() + " (" + clazz.getSimpleName() + ")");
+                }
+
+                Method setter = this.getSetter(method, clazz, field.getType());
+                if (setter == null) {
+                    throw new MethodMappingException("No setter found for getter " + method.getName() + " (" + clazz.getSimpleName() + ")");
+                }
+
+                System.out.println("Mapping field " + field.getName() + " to getter " + method.getName() + " | setter " + setter.getName());
+            } catch (NoSuchFieldException | NoSuchMethodException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
-    public Method getSetter(Method method, Class<?> clazz) {
-        Optional<MethodPrefix> optionalPrefix = MethodPrefix.getMethodPrefix(method.getName());
-        if (optionalPrefix.isEmpty()) {
-            throw new MethodMappingException("Method " + method.getName() + " (" + clazz.getSimpleName() + ") has no regular prefix");
-        }
+    public Method getSetter(Method getter, Class<?> clazz, Class<?> fieldType) throws NoSuchMethodException {
+        String setterName = getter.getName().replace(MethodPrefix.GET.name().toLowerCase(),
+            MethodPrefix.SET.name().toLowerCase());
+        return clazz.getDeclaredMethod(setterName, fieldType);
+    }
+
+    public Field getField(Method getter, Class<?> clazz) throws NoSuchFieldException {
+        String fieldName = this.getFieldName(getter);
+        return clazz.getDeclaredField(fieldName);
     }
 
     public MappedEntity getMappedEntity(Class<?> entityClass) {
@@ -63,6 +77,16 @@ class EntityAnalyzer {
 
     private List<Class<? extends Annotation>> getAnnotations() {
         return Arrays.asList(ColumnMapping.class, EnumMapping.class);
+    }
+
+    public String getFieldName(Method getter) {
+        if (!getter.getName().toLowerCase().startsWith(MethodPrefix.GET.name().toLowerCase())) {
+            throw new IllegalArgumentException("requires getter, but another method type is given.");
+        }
+
+        final String getterName = getter.getName();
+        String fieldName = getterName.substring(MethodPrefix.GET.name().length());
+        return Character.toLowerCase(fieldName.charAt(0)) + fieldName.substring(1);
     }
 
 }
