@@ -1,6 +1,5 @@
 package de.juliandrees.simpleorm.model;
 
-import de.juliandrees.simpleorm.annotation.ColumnMapping;
 import de.juliandrees.simpleorm.annotation.EntityMapping;
 
 /**
@@ -10,16 +9,6 @@ import de.juliandrees.simpleorm.annotation.EntityMapping;
  * @since 23.04.2020
  */
 @EntityMapping("testEntity")
-public class TestEntity {
+public class TestEntity extends BaseEntity {
 
-    private int id;
-
-    @ColumnMapping("id")
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
 }

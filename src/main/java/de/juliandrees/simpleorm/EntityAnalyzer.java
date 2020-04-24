@@ -32,32 +32,43 @@ class EntityAnalyzer {
                 continue;
             }
 
-            try {
-                Field field = this.getField(method, clazz);
-                if (field == null) {
-                    throw new MethodMappingException("No field found for getter " + method.getName() + " (" + clazz.getSimpleName() + ")");
-                }
-
-                Method setter = this.getSetter(method, clazz, field.getType());
-                if (setter == null) {
-                    throw new MethodMappingException("No setter found for getter " + method.getName() + " (" + clazz.getSimpleName() + ")");
-                }
-                mappedEntity.addFieldMapping(field, setter, field.getType());
-            } catch (NoSuchFieldException | NoSuchMethodException ex) {
-                ex.printStackTrace();
+            Field field = this.getField(method, clazz);
+            if (field == null) {
+                throw new MethodMappingException("No field found for getter " + method.getName() + " (" + clazz.getSimpleName() + ")");
             }
+
+            Method setter = this.getSetter(method, clazz, field.getType());
+            if (setter == null) {
+                throw new MethodMappingException("No setter found for getter " + method.getName() + " (" + clazz.getSimpleName() + ")");
+            }
+            mappedEntity.addFieldMapping(field, setter, field.getType());
         }
     }
 
-    public Method getSetter(Method getter, Class<?> clazz, Class<?> fieldType) throws NoSuchMethodException {
+    public Method getSetter(Method getter, Class<?> clazz, Class<?> fieldType) {
         String setterName = getter.getName().replace(MethodPrefix.GET.name().toLowerCase(),
             MethodPrefix.SET.name().toLowerCase());
-        return clazz.getDeclaredMethod(setterName, fieldType);
+
+        Class<?> check = clazz;
+        Method setter = null;
+        do {
+            try {
+                setter = check.getDeclaredMethod(setterName, fieldType);
+            } catch (NoSuchMethodException ex) { }
+        } while (setter == null && (check = check.getSuperclass()) != null);
+        return setter;
     }
 
-    public Field getField(Method getter, Class<?> clazz) throws NoSuchFieldException {
+    public Field getField(Method getter, Class<?> clazz) {
         String fieldName = this.getFieldName(getter);
-        return clazz.getDeclaredField(fieldName);
+        Class<?> check = clazz;
+        Field field = null;
+        do {
+            try {
+                field = check.getDeclaredField(fieldName);
+            } catch (NoSuchFieldException ex) { }
+        } while (field == null && (check = check.getSuperclass()) != null);
+        return field;
     }
 
     public MappedEntity getMappedEntity(Class<?> entityClass) {
