@@ -11,7 +11,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * // TODO class description
@@ -26,6 +25,7 @@ class EntityAnalyzer {
     public EntityAnalyzer() { }
 
     public void analyzeClass(Class<?> clazz) {
+        MappedEntity mappedEntity = new MappedEntity(clazz);
         for (Method method : clazz.getMethods()) {
             if (!method.getName().toLowerCase().startsWith(MethodPrefix.GET.name().toLowerCase()) ||
                 !this.isMappedColumn(method)) {
@@ -42,8 +42,7 @@ class EntityAnalyzer {
                 if (setter == null) {
                     throw new MethodMappingException("No setter found for getter " + method.getName() + " (" + clazz.getSimpleName() + ")");
                 }
-
-                System.out.println("Mapping field " + field.getName() + " to getter " + method.getName() + " | setter " + setter.getName());
+                mappedEntity.addFieldMapping(field, setter, field.getType());
             } catch (NoSuchFieldException | NoSuchMethodException ex) {
                 ex.printStackTrace();
             }

@@ -4,9 +4,7 @@ import lombok.Getter;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 /**
  * // TODO class description
@@ -18,25 +16,27 @@ import java.util.List;
 public class MappedEntity {
 
     private final Class<?> entityClass;
-    private final List<MappedSetter> mappedSetters = new ArrayList<>();
+    private final HashMap<String, MappedSetter> mappedSetters = new HashMap<>();
 
     public MappedEntity(Class<?> entityClass) {
         this.entityClass = entityClass;
     }
 
-    public void addSetter(Field field, Method setter, Class<?> setterType) {
-        mappedSetters.add(new MappedSetter(field, setter, setterType));
+    public void addFieldMapping(Field field, Method setter, Class<?> setterType) {
+        mappedSetters.put(field.getName(), new MappedSetter(setter, setterType));
     }
 
+    /**
+     * Ein gemappter Setter der Klasse.
+     * Enthält die Methode, die zum setzen zu invoken ist, sowie den Typ des Parameters, der übergeben werden muss.
+     */
     @Getter
     public static class MappedSetter {
 
-        private final Field field;
         private final Method setter;
         private final Class<?> setterType;
 
-        public MappedSetter(Field field, Method setter, Class<?> setterType) {
-            this.field = field;
+        public MappedSetter(Method setter, Class<?> setterType) {
             this.setter = setter;
             this.setterType = setterType;
         }
