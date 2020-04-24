@@ -1,16 +1,23 @@
 package de.juliandrees.simpleorm;
 
 import de.juliandrees.simpleorm.annotation.ColumnMapping;
+import de.juliandrees.simpleorm.annotation.EntityMapping;
 import de.juliandrees.simpleorm.annotation.EnumMapping;
+import de.juliandrees.simpleorm.annotation.PrimaryKeyColumn;
+import de.juliandrees.simpleorm.annotation.SuperclassMapping;
 import de.juliandrees.simpleorm.exception.MethodMappingException;
 import de.juliandrees.simpleorm.type.MethodPrefix;
+import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -21,12 +28,16 @@ import java.util.Optional;
  */
 class EntityAnalyzer {
 
+    @Getter
     private List<MappedEntity> mappedEntities = new ArrayList<>();
+
+    private HashMap<Class<?>, List<Class<?>>> classMapping = new HashMap<>();
 
     public EntityAnalyzer() { }
 
     public void analyzeClass(Class<?> clazz) {
-        MappedEntity mappedEntity = new MappedEntity(clazz);
+        classMapping.put(clazz, this.getClassHierarchy(clazz));
+        MappedEntity mappedEntity = new MappedEntity(clazz, this.determineEntityName(clazz));
         for (Method method : clazz.getMethods()) {
             if (!method.getName().toLowerCase().startsWith(MethodPrefix.GET.name().toLowerCase()) ||
                 !this.isMappedColumn(method)) {
@@ -34,16 +45,12 @@ class EntityAnalyzer {
             }
 
             Field field = this.getField(method, clazz);
-            if (field == null) {
-                throw new MethodMappingException("No field found for getter " + method.getName() + " (" + clazz.getSimpleName() + ")");
-            }
+            PrimaryKeyColumn pkAnnotation = field.getAnnotation(PrimaryKeyColumn.class);
 
-            Optional<Method> setter = this.getSetter(method, clazz);
-            if (setter.isEmpty()) {
-                throw new MethodMappingException("No setter found for getter " + method.getName() + " (" + clazz.getSimpleName() + ")");
-            }
-            mappedEntity.addFieldMapping(field, setter.get(), field.getType());
+            Method setter = this.getSetter(method, clazz);
+            mappedEntity.addFieldMapping(field, setter, field.getType(), pkAnnotation != null);
         }
+        mappedEntities.add(mappedEntity);
     }
 
     /**
@@ -55,19 +62,28 @@ class EntityAnalyzer {
      * @param clazz die Klasse, aus der die Methode geladen werden soll
      * @return ein entsprechender Getter
      */
-    public Optional<Method> getSetter(Method getter, Class<?> clazz) {
-        return getMethod(this.getFieldName(getter), MethodPrefix.SET, clazz);
+    public Method getSetter(Method getter, Class<?> clazz) {
+        Optional<Method> optionalGetter = getMethod(this.getFieldName(getter), MethodPrefix.SET, clazz);
+        if (optionalGetter.isEmpty()) {
+            throw new MethodMappingException("No setter found for getter " + getter.getName() + " (" + clazz.getSimpleName() + ")");
+        }
+        return optionalGetter.get();
     }
 
     public Field getField(Method getter, Class<?> clazz) {
         String fieldName = this.getFieldName(getter);
-        Class<?> check = clazz;
+        List<Class<?>> classes = classMapping.get(clazz);
+
         Field field = null;
-        do {
+        for (Class<?> mappingClass : classes) {
             try {
-                field = check.getDeclaredField(fieldName);
-            } catch (NoSuchFieldException ex) { }
-        } while (field == null && (check = check.getSuperclass()) != null);
+                field = mappingClass.getDeclaredField(fieldName);
+            } catch (NoSuchFieldException ignored) { }
+        }
+
+        if (field == null) {
+            throw new MethodMappingException("No field found for getter " + getter.getName() + " (" + clazz.getSimpleName() + ")");
+        }
         return field;
     }
 
@@ -107,6 +123,33 @@ class EntityAnalyzer {
             }
         }
         return Optional.empty();
+    }
+
+    public String determineEntityName(Class<?> clazz) {
+        EntityMapping annotation = clazz.getAnnotation(EntityMapping.class);
+        if (annotation == null) {
+            throw new IllegalArgumentException("Given class has no entity mapping");
+        }
+        String entityName = annotation.value();
+        if (StringUtils.isBlank(entityName)) {
+            entityName = clazz.getSimpleName();
+        }
+        return entityName;
+    }
+
+    public List<Class<?>> getClassHierarchy(Class<?> entityClass) {
+        Objects.requireNonNull(entityClass);
+        List<Class<?>> classes = new ArrayList<>();
+        classes.add(entityClass);
+        Class<?> superclass = entityClass;
+        while ((superclass = superclass.getSuperclass()) != null) {
+            if (superclass.getAnnotation(EntityMapping.class) != null || superclass.getAnnotation(SuperclassMapping.class) != null) {
+                classes.add(superclass);
+            } else {
+                break;
+            }
+        }
+        return classes;
     }
 
 }

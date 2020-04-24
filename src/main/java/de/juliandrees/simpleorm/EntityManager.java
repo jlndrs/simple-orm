@@ -2,6 +2,7 @@ package de.juliandrees.simpleorm;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * // TODO class description
@@ -41,4 +42,17 @@ public class EntityManager implements Manager {
     public List<Class<?>> getEntityClasses() {
         return entityClasses;
     }
+
+    public List<MappedEntity> getMappedEntities() {
+        return analyzer.getMappedEntities();
+    }
+
+    public Optional<MappedEntity> getMappedEntity(Class<?> entityClazz) {
+        return getMappedEntities().stream().filter(mappedEntity -> mappedEntity.getEntityClass().equals(entityClazz)).findFirst();
+    }
+
+    public Optional<MappedEntity> getMappedEntity(String entityName) {
+        return getMappedEntities().stream().filter(mappedEntity -> mappedEntity.getEntityName().equalsIgnoreCase(entityName)).findFirst();
+    }
+
 }

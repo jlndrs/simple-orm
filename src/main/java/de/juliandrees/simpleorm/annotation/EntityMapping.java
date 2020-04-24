@@ -17,6 +17,6 @@ import java.lang.annotation.Target;
 @Documented
 public @interface EntityMapping {
 
-    String value();
+    String value() default "";
 
 }

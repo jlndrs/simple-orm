@@ -7,9 +7,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class EntityAnalyzerTest {
 
@@ -49,7 +52,13 @@ public class EntityAnalyzerTest {
         try {
             String fieldName = analyzer.getFieldName(BaseEntity.class.getDeclaredMethod("setId", Long.class));
             fail("Expected an exception, but none is thrown");
-        } catch (Exception ex) { }
+        } catch (Exception ignored) { }
+    }
+
+    @Test
+    public void getClassHierarchyTest() {
+        List<Class<?>> classes = analyzer.getClassHierarchy(TestEntity.class);
+        assertEquals(2, classes.size());
     }
 
 }

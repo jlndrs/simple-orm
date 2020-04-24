@@ -4,6 +4,8 @@ import de.juliandrees.simpleorm.annotation.ColumnMapping;
 import de.juliandrees.simpleorm.annotation.PrimaryKeyColumn;
 import de.juliandrees.simpleorm.annotation.SuperclassMapping;
 
+import java.io.Serializable;
+
 /**
  * // TODO class description
  *
@@ -11,12 +13,12 @@ import de.juliandrees.simpleorm.annotation.SuperclassMapping;
  * @since 24.04.2020
  */
 @SuperclassMapping
-public abstract class BaseEntity {
+public abstract class BaseEntity implements Serializable {
 
     private Long id;
 
     @PrimaryKeyColumn
-    @ColumnMapping("ID")
+    @ColumnMapping
     public Long getId() {
         return id;
     }
