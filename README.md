@@ -45,3 +45,47 @@ Was wie einfache Java-Vererbung klingt, ist bei ORM nicht selbstverständlich.
 
 **Hinweis**: Ein Typ kann sowohl eine Entität (`@EntityMapping`) als auch eine Superklasse für Entitäten (`@SuperclassMapping`)
 sein.
+
+### PrimaryKeyColumn
+``` java
+@PrimaryKeyColumn
+@ColumnMapping
+private Long id;
+```
+Ein `@PrimaryKeyColumn` ist der Hinweis für das Modul, dass dieses
+Attribut die Werte des Primärschlüssels enthält. (Wichtig für Persistence).
+
+**Jede Entität benötigt eine Primärschlüsselspalte**.
+
+## Weitere Klassen
+Zusätzlich bietet Simple-Orm einige Klassen, die beim Verwalten und Persistieren von Entitäten 
+nützlich sein können.
+
+### EntityManager
+Der EntityManager ist eine Klasse, mit der sich die Entitäten im allgemeinen Verwalten lassen,
+die im Projekt vorhanden und gescannt wurden.
+
+#### Erstellen
+Da der EntityManager Entitäten (hier: Typen, Klassen) verwaltet, müssen diese zuerst geladen werden.
+
+``` java
+EntityManager#scanPackage(String package, boolean recursive)
+```
+>Auswahl der Entitäten mit Angabe eines Packages per String (z. B. `scanPackage("de.juliandrees.simpleorm.model", true`).
+
+``` java
+EntityManager#scanPackage(Class<?> classInPackage, boolean recursive)
+```
+> Auswahl der Entitäten anhand einer beliebigen Klasse, die sich im Package befindet.
+
+So kann die Initialisierung eines EntityManagers beispielsweise wie folgt aussehen:
+
+``` java
+EntityManager entityManager = EntityManager.scanPackage("de.juliandrees.model", true);
+```
+
+#### Option: recursive
+Die Option "recursive" bedeutet, dass rekursiv die Subpackages des "Startpackages" behandelt werden können,
+um alle unterliegenden Entitäten auch zu finden. 
+
+Ist die Option auf false, so wird nur das Package beachtet, welches konkret angegeben wurde (bzw. welches durch die Klasse bestimmt wird).
