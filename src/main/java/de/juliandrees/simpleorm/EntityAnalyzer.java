@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * // TODO class description
@@ -37,26 +38,25 @@ class EntityAnalyzer {
                 throw new MethodMappingException("No field found for getter " + method.getName() + " (" + clazz.getSimpleName() + ")");
             }
 
-            Method setter = this.getSetter(method, clazz, field.getType());
-            if (setter == null) {
+            Optional<Method> setter = this.getSetter(method, clazz);
+            if (setter.isEmpty()) {
                 throw new MethodMappingException("No setter found for getter " + method.getName() + " (" + clazz.getSimpleName() + ")");
             }
-            mappedEntity.addFieldMapping(field, setter, field.getType());
+            mappedEntity.addFieldMapping(field, setter.get(), field.getType());
         }
     }
 
-    public Method getSetter(Method getter, Class<?> clazz, Class<?> fieldType) {
-        String setterName = getter.getName().replace(MethodPrefix.GET.name().toLowerCase(),
-            MethodPrefix.SET.name().toLowerCase());
-
-        Class<?> check = clazz;
-        Method setter = null;
-        do {
-            try {
-                setter = check.getDeclaredMethod(setterName, fieldType);
-            } catch (NoSuchMethodException ex) { }
-        } while (setter == null && (check = check.getSuperclass()) != null);
-        return setter;
+    /**
+     * Nimmt die set-Methode, die als erste passende in der Methodenliste angeführt wird.
+     * Methoden überladen funktioniert bei diesem Prinzip nicht und sollte
+     * bei ORMs auf nicht angewendet werden.
+     *
+     * @param getter die passende get-Methode
+     * @param clazz die Klasse, aus der die Methode geladen werden soll
+     * @return ein entsprechender Getter
+     */
+    public Optional<Method> getSetter(Method getter, Class<?> clazz) {
+        return getMethod(this.getFieldName(getter), MethodPrefix.SET, clazz);
     }
 
     public Field getField(Method getter, Class<?> clazz) {
@@ -97,6 +97,16 @@ class EntityAnalyzer {
         final String getterName = getter.getName();
         String fieldName = getterName.substring(MethodPrefix.GET.name().length());
         return Character.toLowerCase(fieldName.charAt(0)) + fieldName.substring(1);
+    }
+
+    public Optional<Method> getMethod(String fieldName, MethodPrefix methodPrefix, Class<?> clazz) {
+        final String methodName = methodPrefix.name().toLowerCase() + fieldName; // case-sensitive doesnt matter
+        for (Method method : clazz.getMethods()) {
+            if (method.getName().equalsIgnoreCase(methodName)) {
+                return Optional.of(method);
+            }
+        }
+        return Optional.empty();
     }
 
 }
