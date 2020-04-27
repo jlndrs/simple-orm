@@ -10,8 +10,8 @@ import de.juliandrees.simpleorm.model.BaseEntity;
  */
 public interface PersistenceService {
 
-    <T extends BaseEntity> void persist(T entity);
+    <T> void persist(T entity);
 
-    <T> T find(Long id, Class<? extends BaseEntity> entityClass);
+    <T> T find(Long id, Class<?> entityClass);
 
 }
