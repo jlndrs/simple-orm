@@ -5,6 +5,8 @@ import de.juliandrees.simpleorm.persistence.PersistenceConfig;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
@@ -42,6 +44,7 @@ public abstract class AbstractSqlConnection implements SqlConnection {
     public void openConnection() throws SQLException {
         if (!isConnected()) {
             this.connection = DriverManager.getConnection("jdbc:" + this.jdbcType + "://" + this.host + ":" + this.port + "/" + this.database, this.userName, this.password);
+            System.out.println("simple-orm - Connection established");
         }
     }
 
@@ -49,12 +52,34 @@ public abstract class AbstractSqlConnection implements SqlConnection {
     public void closeConnection() throws SQLException {
         if (isConnected()) {
             this.connection.close();
+            System.out.println("simple-orm - Connection closed");
         }
     }
 
     @Override
     public boolean isConnected() {
         return connection != null;
+    }
+
+    @Override
+    public PreparedStatement prepare(String query, Object... parameters) throws SQLException {
+        PreparedStatement ps = connection.prepareStatement(query);
+        for (int i = 0; i < parameters.length; i++) {
+            ps.setObject(i + 1, parameters[i]);
+        }
+        return ps;
+    }
+
+    @Override
+    public void update(String query, Object... parameters) throws SQLException {
+        try (PreparedStatement statement = this.prepare(query, parameters)) {
+            statement.executeUpdate();
+        }
+    }
+
+    @Override
+    public ResultSet result(String query, Object... parameters) throws SQLException {
+        return prepare(query, parameters).executeQuery();
     }
 
     protected abstract Class<? extends Driver> getDriver();

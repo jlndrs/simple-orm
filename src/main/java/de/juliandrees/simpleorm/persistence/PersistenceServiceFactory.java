@@ -10,6 +10,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
+import java.sql.SQLException;
 import java.util.HashMap;
 
 /**
@@ -35,7 +37,7 @@ public final class PersistenceServiceFactory {
             DefaultPersistenceService defaultPersistenceService = new DefaultPersistenceService(entityManager, sqlConnection);
             sqlConnection.openConnection();
             return defaultPersistenceService;
-        } catch (Exception e) {
+        } catch (SQLException | IOException e) {
             throw new NullPointerException(e.getMessage());
         }
     }
@@ -60,12 +62,17 @@ public final class PersistenceServiceFactory {
         }
     }
 
-    private static SqlConnection newSqlConnection(String jdbcType, PersistenceConfig config) throws Exception {
+    private static SqlConnection newSqlConnection(String jdbcType, PersistenceConfig config)  {
         Class<? extends AbstractSqlConnection> sqlConnection = connections.get(jdbcType.toLowerCase());
         if (sqlConnection == null) {
             throw new IllegalArgumentException("jdbc type " + jdbcType + " is not valid.");
         }
-        SqlConnection connection = sqlConnection.getConstructor(PersistenceConfig.class).newInstance(config);
+        SqlConnection connection = null;
+        try {
+            connection = sqlConnection.getConstructor(PersistenceConfig.class).newInstance(config);
+        } catch (Exception e) {
+            throw new IllegalStateException("can not instantiate sql connection");
+        }
         connection.onInitialize();
         return connection;
     }

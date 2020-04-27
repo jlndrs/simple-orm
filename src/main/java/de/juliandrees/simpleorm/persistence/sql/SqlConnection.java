@@ -1,5 +1,7 @@
 package de.juliandrees.simpleorm.persistence.sql;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
@@ -17,5 +19,11 @@ public interface SqlConnection {
     void openConnection() throws SQLException;
 
     void closeConnection() throws SQLException;
+
+    PreparedStatement prepare(String query, Object... parameters) throws SQLException;
+
+    void update(String query, Object... parameters) throws SQLException;
+
+    ResultSet result(String query, Object... parameters) throws SQLException;
 
 }

@@ -7,6 +7,7 @@ import de.juliandrees.simpleorm.annotation.PrimaryKeyColumn;
 import de.juliandrees.simpleorm.annotation.SuperclassMapping;
 import de.juliandrees.simpleorm.exception.MethodMappingException;
 import de.juliandrees.simpleorm.type.MethodPrefix;
+import de.juliandrees.simpleorm.type.PropertyType;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
@@ -45,10 +46,15 @@ class EntityAnalyzer {
             }
 
             Field field = this.getField(method, clazz);
-            PrimaryKeyColumn pkAnnotation = field.getAnnotation(PrimaryKeyColumn.class);
-
             Method setter = this.getSetter(method, clazz);
-            mappedEntity.addFieldMapping(field, setter, field.getType(), pkAnnotation != null);
+
+            PrimaryKeyColumn pkAnnotation = field.getAnnotation(PrimaryKeyColumn.class);
+            PropertyType propertyType = determinePropertyType(field.getType());
+
+            String databaseColumn = getMappedFieldName(field, method);
+            PropertyMapping propertyMapping = new PropertyMapping(field.getType(), field.getName(), method, setter, propertyType);
+
+            mappedEntity.addMapping(databaseColumn, propertyMapping, pkAnnotation != null);
         }
         mappedEntities.add(mappedEntity);
     }
@@ -150,6 +156,27 @@ class EntityAnalyzer {
             }
         }
         return classes;
+    }
+
+    private PropertyType determinePropertyType(Class<?> fieldType) {
+        PropertyType propertyType;
+        if (fieldType.getPackageName().equalsIgnoreCase("java.lang")) {
+            propertyType = PropertyType.JAVA_DEFAULT;
+        } else {
+            propertyType = PropertyType.ENTITY_REFERENCE;
+        }
+        return propertyType;
+    }
+
+    private String getMappedFieldName(Field field, Method getter) {
+        ColumnMapping columnMapping = getter.getAnnotation(ColumnMapping.class);
+        String mapped;
+        if (StringUtils.isBlank(columnMapping.value())) {
+            mapped = field.getName();
+        } else {
+            mapped = columnMapping.value();
+        }
+        return mapped;
     }
 
 }

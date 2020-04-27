@@ -4,6 +4,8 @@ import de.juliandrees.simpleorm.EntityManager;
 import de.juliandrees.simpleorm.MappedEntity;
 import de.juliandrees.simpleorm.persistence.sql.SqlConnection;
 
+import java.sql.ResultSet;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -12,12 +14,12 @@ import java.util.Optional;
  * @author Julian Drees
  * @since 24.04.2020
  */
-public class DefaultPersistenceService implements PersistenceService {
+class DefaultPersistenceService implements PersistenceService {
 
     private final EntityManager entityManager;
     private final SqlConnection sqlConnection;
 
-    public DefaultPersistenceService(EntityManager entityManager, SqlConnection sqlConnection) {
+    DefaultPersistenceService(EntityManager entityManager, SqlConnection sqlConnection) {
         this.entityManager = entityManager;
         this.sqlConnection = sqlConnection;
     }
@@ -34,7 +36,9 @@ public class DefaultPersistenceService implements PersistenceService {
             throw new IllegalArgumentException("entity class not mapped: " + entityClass.getName());
         }
         try {
-            return (T) entityClass.getConstructor().newInstance();
+            ResultSet rs = sqlConnection.result("select * from " + optionalEntity.get().getEntityName() + " where ");
+            T instance = (T) entityClass.getConstructor().newInstance();
+            return instance;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

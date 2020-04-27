@@ -1,9 +1,8 @@
 package de.juliandrees.simpleorm.persistence;
 
-import de.juliandrees.simpleorm.model.BaseEntity;
-
 /**
- * // TODO class description
+ * Service for entity sql handling.
+ * See the default implementation {@link DefaultPersistenceService}.
  *
  * @author Julian Drees
  * @since 24.04.2020

@@ -1,6 +1,8 @@
 package de.juliandrees.simpleorm;
 
 import de.juliandrees.simpleorm.model.Currency;
+import de.juliandrees.simpleorm.persistence.PersistenceService;
+import de.juliandrees.simpleorm.persistence.PersistenceServiceFactory;
 
 /**
  * // TODO class description
@@ -11,7 +13,9 @@ import de.juliandrees.simpleorm.model.Currency;
 public class SimpleOrm {
 
     public static void main(String... args) {
-        EntityManager entityManager = EntityManager.scanPackage(Currency.class, false);
+        EntityManager entityManager = EntityManagerFactory.scanPackage(Currency.class, false);
+        PersistenceService persistenceService = PersistenceServiceFactory.newInstance(entityManager);
+        Currency currency = persistenceService.find(1L, Currency.class);
     }
 
 }
