@@ -35,7 +35,7 @@ class DefaultPersistenceService implements PersistenceService {
     }
 
     @Override
-    public <T> T find(Long id, Class<?> entityClass) {
+    public <T> T find(Long id, Class<T> entityClass) {
         MappedEntity mappedEntity = getMappedEntity(entityClass);
         try {
             MappedEntity.PrimaryKeyPropertyMapping primaryKey = mappedEntity.getPrimaryKeyMapping();
@@ -50,10 +50,23 @@ class DefaultPersistenceService implements PersistenceService {
     }
 
     @Override
-    public <T> List<T> loadAll(Class<?> entityClass) {
+    public <T> List<T> loadAll(Class<T> entityClass) {
         MappedEntity mappedEntity = getMappedEntity(entityClass);
         try {
             ResultSet rs = sqlConnection.result("select * from " + mappedEntity.getEntityName() + " order by " + mappedEntity.getPrimaryKeyMapping().getDatabaseColumn() + " asc;");
+            List<T> entities = buildEntities(rs, entityClass, mappedEntity);
+            rs.close();
+            return entities;
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    @Override
+    public <T, E> List<T> find(String column, E value, Class<T> entityClass) {
+        MappedEntity mappedEntity = getMappedEntity(entityClass);
+        try {
+            ResultSet rs = sqlConnection.result("select * from " + mappedEntity.getEntityName() + " where " + column + " = ?;", value);
             List<T> entities = buildEntities(rs, entityClass, mappedEntity);
             rs.close();
             return entities;
