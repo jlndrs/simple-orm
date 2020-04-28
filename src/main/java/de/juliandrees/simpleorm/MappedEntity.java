@@ -1,13 +1,8 @@
 package de.juliandrees.simpleorm;
 
-import de.juliandrees.simpleorm.type.PropertyType;
 import lombok.Getter;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -38,7 +33,7 @@ public class MappedEntity {
     }
 
     @Getter
-    private static class PrimaryKeyPropertyMapping {
+    public static class PrimaryKeyPropertyMapping {
 
         private final String databaseColumn;
         private final PropertyMapping propertyMapping;

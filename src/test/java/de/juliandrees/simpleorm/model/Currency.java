@@ -14,6 +14,8 @@ public class Currency extends BaseEntity {
 
     private String name;
     private String shortcut;
+    private String description;
+    private String colorcode;
 
     @ColumnMapping
     public String getName() {
@@ -31,5 +33,23 @@ public class Currency extends BaseEntity {
 
     public void setShortcut(String shortcut) {
         this.shortcut = shortcut;
+    }
+
+    @ColumnMapping
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    @ColumnMapping
+    public String getColorcode() {
+        return colorcode;
+    }
+
+    public void setColorcode(String colorcode) {
+        this.colorcode = colorcode;
     }
 }

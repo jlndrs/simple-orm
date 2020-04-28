@@ -2,9 +2,15 @@ package de.juliandrees.simpleorm.persistence;
 
 import de.juliandrees.simpleorm.EntityManager;
 import de.juliandrees.simpleorm.MappedEntity;
+import de.juliandrees.simpleorm.PropertyMapping;
 import de.juliandrees.simpleorm.persistence.sql.SqlConnection;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -31,16 +37,57 @@ class DefaultPersistenceService implements PersistenceService {
 
     @Override
     public <T> T find(Long id, Class<?> entityClass) {
-        Optional<MappedEntity> optionalEntity = entityManager.getMappedEntity(entityClass);
-        if (optionalEntity.isEmpty()) {
-            throw new IllegalArgumentException("entity class not mapped: " + entityClass.getName());
-        }
+        MappedEntity mappedEntity = getMappedEntity(entityClass);
         try {
-            ResultSet rs = sqlConnection.result("select * from " + optionalEntity.get().getEntityName() + " where ");
-            T instance = (T) entityClass.getConstructor().newInstance();
+            MappedEntity.PrimaryKeyPropertyMapping primaryKey = mappedEntity.getPrimaryKeyMapping();
+
+            ResultSet rs = sqlConnection.result("select * from " + mappedEntity.getEntityName() + " where " + primaryKey.getDatabaseColumn() + " = ?;", id);
+            T instance = buildEntity(rs, entityClass, mappedEntity);
+            rs.close();
             return instance;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public <T> List<T> loadAll(Class<?> entityClass) {
+        MappedEntity mappedEntity = getMappedEntity(entityClass);
+        try {
+            ResultSet rs = sqlConnection.result("select * from " + mappedEntity.getEntityName() + " order by " + mappedEntity.getPrimaryKeyMapping().getDatabaseColumn() + " asc;");
+            List<T> entities = buildEntities(rs, entityClass, mappedEntity);
+            rs.close();
+            return entities;
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private <T> T buildEntity(ResultSet resultSet, Class<?> entityClass, MappedEntity scheme) throws Exception {
+        T instance = (T) entityClass.getConstructor().newInstance();
+        if (resultSet.next()) {
+            for (Map.Entry<String, PropertyMapping> entry : scheme.getPropertyMappings().entrySet()) {
+                Object value = resultSet.getObject(entry.getKey(), entry.getValue().getFieldType());
+                entry.getValue().getSetter().invoke(instance, value);
+            }
+        }
+        return instance;
+    }
+
+    private <T> List<T> buildEntities(ResultSet resultSet, Class<?> entityClass, MappedEntity scheme) throws Exception {
+        List<T> entities = new ArrayList<>();
+
+        while (!resultSet.isLast()) {
+            entities.add(buildEntity(resultSet, entityClass, scheme));
+        }
+        return entities;
+    }
+
+    private MappedEntity getMappedEntity(Class<?> entityClass) {
+        Optional<MappedEntity> optionalEntity = entityManager.getMappedEntity(entityClass);
+        if (optionalEntity.isEmpty()) {
+            throw new IllegalArgumentException("entity class not mapped: " + entityClass.getName());
+        }
+        return optionalEntity.get();
     }
 }

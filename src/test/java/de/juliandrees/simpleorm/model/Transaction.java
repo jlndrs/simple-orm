@@ -47,6 +47,7 @@ public class Transaction extends BaseEntity {
     }
 
     @EnumMapping(type = EnumType.NAME)
+    @ColumnMapping
     public TransactionType getTransactionType() {
         return transactionType;
     }

@@ -48,7 +48,7 @@ class EntityAnalyzer {
             Field field = this.getField(method, clazz);
             Method setter = this.getSetter(method, clazz);
 
-            PrimaryKeyColumn pkAnnotation = field.getAnnotation(PrimaryKeyColumn.class);
+            PrimaryKeyColumn pkAnnotation = method.getAnnotation(PrimaryKeyColumn.class);
             PropertyType propertyType = determinePropertyType(field.getType());
 
             String databaseColumn = getMappedFieldName(field, method);
@@ -76,6 +76,14 @@ class EntityAnalyzer {
         return optionalGetter.get();
     }
 
+    /**
+     * Ermittelt anhand eines getters das entsprechende Feld, auf welches
+     * der Getter vermutlich zeigt.
+     *
+     * @param getter die passende get-Methode
+     * @param clazz die Klasse, aus der das Feld geladen werden soll
+     * @return ein entsprechendes Feld
+     */
     public Field getField(Method getter, Class<?> clazz) {
         String fieldName = this.getFieldName(getter);
         List<Class<?>> classes = classMapping.get(clazz);
@@ -162,6 +170,8 @@ class EntityAnalyzer {
         PropertyType propertyType;
         if (fieldType.getPackageName().equalsIgnoreCase("java.lang")) {
             propertyType = PropertyType.JAVA_DEFAULT;
+        } else if (fieldType.isEnum()) {
+            propertyType = PropertyType.ENUMERATION;
         } else {
             propertyType = PropertyType.ENTITY_REFERENCE;
         }

@@ -9,6 +9,7 @@ package de.juliandrees.simpleorm.type;
 public enum PropertyType {
 
     JAVA_DEFAULT,
+    ENUMERATION,
     COLLECTION,
     ENTITY_REFERENCE,
 
