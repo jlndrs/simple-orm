@@ -29,6 +29,11 @@ public class PersistenceServiceTest {
         } catch (NoSuchMethodException ignored) { }
     }
 
+    @Test
+    public void constructorTest() throws Exception {
+        PersistenceServiceFactory.newPersistenceService(DefaultPersistenceService.class, entityManager, null);
+    }
+
     @After
     public void after() {
         if (persistenceService != null) {

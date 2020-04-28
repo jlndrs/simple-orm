@@ -24,7 +24,7 @@ class DefaultPersistenceService implements PersistenceService {
     private final EntityManager entityManager;
     private final SqlConnection sqlConnection;
 
-    DefaultPersistenceService(EntityManager entityManager, SqlConnection sqlConnection) {
+    public DefaultPersistenceService(EntityManager entityManager, SqlConnection sqlConnection) {
         this.entityManager = entityManager;
         this.sqlConnection = sqlConnection;
     }
