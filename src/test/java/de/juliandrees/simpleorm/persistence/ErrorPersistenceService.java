@@ -17,17 +17,22 @@ public class ErrorPersistenceService implements PersistenceService {
     }
 
     @Override
-    public <T> T find(Long id, Class<?> entityClass) {
-        return null;
-    }
-
-    @Override
-    public <T> List<T> loadAll(Class<?> entityClass) {
-        return null;
-    }
-
-    @Override
     public void close() throws IOException {
 
+    }
+
+    @Override
+    public <T> T find(Long id, Class<T> entityClass) {
+        return null;
+    }
+
+    @Override
+    public <T> List<T> loadAll(Class<T> entityClass) {
+        return null;
+    }
+
+    @Override
+    public <T, E> List<T> find(String column, E value, Class<T> entityClass) {
+        return null;
     }
 }
