@@ -6,6 +6,7 @@ import de.juliandrees.simpleorm.annotation.EnumMapping;
 import de.juliandrees.simpleorm.annotation.PrimaryKeyColumn;
 import de.juliandrees.simpleorm.annotation.SuperclassMapping;
 import de.juliandrees.simpleorm.exception.MethodMappingException;
+import de.juliandrees.simpleorm.exception.NoPrimaryKeyException;
 import de.juliandrees.simpleorm.type.MethodPrefix;
 import de.juliandrees.simpleorm.type.PropertyType;
 import lombok.Getter;
@@ -56,6 +57,7 @@ class EntityAnalyzer {
 
             mappedEntity.addMapping(databaseColumn, propertyMapping, pkAnnotation != null);
         }
+        checkPrimaryKey(mappedEntity);
         mappedEntities.add(mappedEntity);
     }
 
@@ -187,6 +189,12 @@ class EntityAnalyzer {
             mapped = columnMapping.value();
         }
         return mapped;
+    }
+
+    final void checkPrimaryKey(MappedEntity mappedEntity) {
+        if (mappedEntity.getPrimaryKeyMapping() == null) {
+            throw new NoPrimaryKeyException(mappedEntity.getEntityName());
+        }
     }
 
 }

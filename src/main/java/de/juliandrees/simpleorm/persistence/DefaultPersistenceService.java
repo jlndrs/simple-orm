@@ -5,8 +5,7 @@ import de.juliandrees.simpleorm.MappedEntity;
 import de.juliandrees.simpleorm.PropertyMapping;
 import de.juliandrees.simpleorm.persistence.sql.SqlConnection;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -89,5 +88,14 @@ class DefaultPersistenceService implements PersistenceService {
             throw new IllegalArgumentException("entity class not mapped: " + entityClass.getName());
         }
         return optionalEntity.get();
+    }
+
+    @Override
+    public void close() throws IOException {
+        try {
+            sqlConnection.closeConnection();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
     }
 }

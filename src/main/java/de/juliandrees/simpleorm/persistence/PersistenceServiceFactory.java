@@ -10,8 +10,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
-import java.sql.SQLException;
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
 
 /**
@@ -31,14 +30,18 @@ public final class PersistenceServiceFactory {
     private PersistenceServiceFactory() { }
 
     public static PersistenceService newInstance(EntityManager entityManager) {
+        return newInstance(entityManager, DefaultPersistenceService.class);
+    }
+
+    public static <T extends PersistenceService> T newInstance(EntityManager entityManager, Class<T> persistenceClass) {
         try {
             PersistenceConfig config = PersistenceServiceFactory.getConfig();
             SqlConnection sqlConnection = newSqlConnection(config.getJdbcType(), config);
-            DefaultPersistenceService defaultPersistenceService = new DefaultPersistenceService(entityManager, sqlConnection);
+            T persistenceService = newPersistenceService(persistenceClass, entityManager, sqlConnection);
             sqlConnection.openConnection();
-            return defaultPersistenceService;
-        } catch (SQLException | IOException e) {
-            throw new NullPointerException(e.getMessage());
+            return persistenceService;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -75,6 +78,16 @@ public final class PersistenceServiceFactory {
         }
         connection.onInitialize();
         return connection;
+    }
+
+    static <T extends PersistenceService> T newPersistenceService(Class<T> persistenceServiceClass,
+                                                            EntityManager entityManager, SqlConnection sqlConnection) throws NoSuchMethodException {
+        try {
+            Constructor<T> constructor = persistenceServiceClass.getConstructor(EntityManager.class, SqlConnection.class);
+            return constructor.newInstance(entityManager, sqlConnection);
+        } catch (Exception e) {
+            throw new NoSuchMethodException("required constructor does not exists");
+        }
     }
 
 }

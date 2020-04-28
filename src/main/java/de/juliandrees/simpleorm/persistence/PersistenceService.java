@@ -1,5 +1,6 @@
 package de.juliandrees.simpleorm.persistence;
 
+import java.io.Closeable;
 import java.util.List;
 
 /**
@@ -9,7 +10,7 @@ import java.util.List;
  * @author Julian Drees
  * @since 24.04.2020
  */
-public interface PersistenceService {
+public interface PersistenceService extends Closeable {
 
     <T> void persist(T entity);
 
