@@ -12,6 +12,8 @@ import java.util.List;
  */
 public interface PersistenceService extends Closeable {
 
+    void onInitialize();
+
     /**
      * Store an entity to the database.
      *
@@ -31,6 +33,17 @@ public interface PersistenceService extends Closeable {
     <T> T find(Long id, Class<T> entityClass);
 
     /**
+     * Fetch an entity from the database by another column.
+     *
+     * @param column the database field name
+     * @param value the property to use for comparison
+     * @param entityClass class of the entity
+     * @param <T> return type
+     * @return the entity
+     */
+    <T> T find(String column, Object value, Class<T> entityClass);
+
+    /**
      * Fetches all entities.
      *
      * @param entityClass class of the entities
@@ -40,8 +53,14 @@ public interface PersistenceService extends Closeable {
     <T> List<T> loadAll(Class<T> entityClass);
 
     /**
+     * Fetches all entites.
      *
+     * @param column the database field name
+     * @param value the property to use for comparison
+     * @param entityClass class of the entity
+     * @param <T> return type
+     * @return all entities
      */
-    <T, E> List<T> find(String column, E value, Class<T> entityClass);
+    <T> List<T> loadAll(String column, Object value, Class<?> entityClass);
 
 }

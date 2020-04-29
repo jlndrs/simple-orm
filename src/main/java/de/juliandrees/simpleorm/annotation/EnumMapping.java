@@ -15,11 +15,13 @@ import java.lang.annotation.Target;
  * @author Julian Drees
  * @since 23.04.2020
  */
-@Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
+@Documented
 public @interface EnumMapping {
 
     EnumType type();
 
 }
+
+

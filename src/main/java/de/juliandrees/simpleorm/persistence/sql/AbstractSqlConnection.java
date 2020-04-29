@@ -63,7 +63,7 @@ public abstract class AbstractSqlConnection implements SqlConnection {
 
     @Override
     public PreparedStatement prepare(String query, Object... parameters) throws SQLException {
-        PreparedStatement ps = connection.prepareStatement(query);
+        PreparedStatement ps = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
         for (int i = 0; i < parameters.length; i++) {
             ps.setObject(i + 1, parameters[i]);
         }

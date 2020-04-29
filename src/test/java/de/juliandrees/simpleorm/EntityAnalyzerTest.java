@@ -3,22 +3,22 @@ package de.juliandrees.simpleorm;
 import de.juliandrees.simpleorm.model.BaseEntity;
 import de.juliandrees.simpleorm.model.TestEntity;
 import de.juliandrees.simpleorm.type.MethodPrefix;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class EntityAnalyzerTest {
 
     private EntityAnalyzer analyzer;
 
-    @Before
+    @BeforeEach
     public void before() {
         this.analyzer = new EntityAnalyzer();
     }

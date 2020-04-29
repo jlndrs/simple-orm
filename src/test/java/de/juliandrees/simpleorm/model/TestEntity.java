@@ -1,5 +1,6 @@
 package de.juliandrees.simpleorm.model;
 
+import de.juliandrees.simpleorm.annotation.ColumnMapping;
 import de.juliandrees.simpleorm.annotation.EntityMapping;
 
 /**
@@ -13,6 +14,7 @@ public class TestEntity extends BaseEntity {
 
     private boolean compatible;
 
+    @ColumnMapping
     public boolean isCompatible() {
         return compatible;
     }

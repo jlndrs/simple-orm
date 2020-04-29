@@ -37,8 +37,10 @@ public final class PersistenceServiceFactory {
         try {
             PersistenceConfig config = PersistenceServiceFactory.getConfig();
             SqlConnection sqlConnection = newSqlConnection(config.getJdbcType(), config);
-            T persistenceService = newPersistenceService(persistenceClass, entityManager, sqlConnection);
             sqlConnection.openConnection();
+
+            T persistenceService = newPersistenceService(persistenceClass, entityManager, sqlConnection);
+            persistenceService.onInitialize();
             return persistenceService;
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());

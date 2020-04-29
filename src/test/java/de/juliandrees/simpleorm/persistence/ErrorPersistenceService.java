@@ -32,7 +32,17 @@ public class ErrorPersistenceService implements PersistenceService {
     }
 
     @Override
-    public <T, E> List<T> find(String column, E value, Class<T> entityClass) {
+    public <T> T find(String column, Object value, Class<T> entityClass) {
         return null;
+    }
+
+    @Override
+    public <T> List<T> loadAll(String column, Object value, Class<?> entityClass) {
+        return null;
+    }
+
+    @Override
+    public void onInitialize() {
+
     }
 }
