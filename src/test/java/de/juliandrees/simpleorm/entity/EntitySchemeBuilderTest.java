@@ -1,4 +1,4 @@
-package de.juliandrees.simpleorm;
+package de.juliandrees.simpleorm.entity;
 
 import de.juliandrees.simpleorm.model.BaseEntity;
 import de.juliandrees.simpleorm.model.TestEntity;
@@ -14,50 +14,50 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class EntityAnalyzerTest {
+public class EntitySchemeBuilderTest {
 
-    private EntityAnalyzer analyzer;
+    private EntitySchemeBuilder schemeBuilder;
 
     @BeforeEach
     public void before() {
-        this.analyzer = new EntityAnalyzer();
+        this.schemeBuilder = new EntitySchemeBuilder();
     }
 
     @Test
     public void getExistingMethodTest() {
-        Optional<Method> optionalMethod = analyzer.getMethod("id", MethodPrefix.GET, TestEntity.class);
+        Optional<Method> optionalMethod = schemeBuilder.getMethod("id", MethodPrefix.GET, TestEntity.class);
         assertTrue(optionalMethod.isPresent());
     }
 
     @Test
     public void isExistingMethodTest() {
-        Optional<Method> optionalMethod = analyzer.getMethod("compatible", MethodPrefix.IS, TestEntity.class);
+        Optional<Method> optionalMethod = schemeBuilder.getMethod("compatible", MethodPrefix.IS, TestEntity.class);
         assertTrue(optionalMethod.isPresent());
     }
 
     @Test
     public void getNonExistingMethodTest() {
-        Optional<Method> optionalMethod = analyzer.getMethod("nonExistingField", MethodPrefix.GET, TestEntity.class);
+        Optional<Method> optionalMethod = schemeBuilder.getMethod("nonExistingField", MethodPrefix.GET, TestEntity.class);
         assertTrue(optionalMethod.isEmpty());
     }
 
     @Test
     public void onFieldNameExtractionTest() throws Exception {
-        String fieldName = analyzer.getFieldName(BaseEntity.class.getDeclaredMethod("getId"));
+        String fieldName = schemeBuilder.getFieldName(BaseEntity.class.getDeclaredMethod("getId"));
         assertEquals("id", fieldName);
     }
 
     @Test
     public void onSetterFieldNameExtractionTest() {
         try {
-            String fieldName = analyzer.getFieldName(BaseEntity.class.getDeclaredMethod("setId", Long.class));
+            String fieldName = schemeBuilder.getFieldName(BaseEntity.class.getDeclaredMethod("setId", Long.class));
             fail("Expected an exception, but none is thrown");
         } catch (Exception ignored) { }
     }
 
     @Test
     public void getClassHierarchyTest() {
-        List<Class<?>> classes = analyzer.getClassHierarchy(TestEntity.class);
+        List<Class<?>> classes = schemeBuilder.getClassHierarchy(TestEntity.class);
         assertEquals(2, classes.size());
     }
 

@@ -1,7 +1,7 @@
 package de.juliandrees.simpleorm.persistence;
 
 import com.google.gson.Gson;
-import de.juliandrees.simpleorm.EntityManager;
+import de.juliandrees.simpleorm.entity.EntityManager;
 import de.juliandrees.simpleorm.persistence.sql.AbstractSqlConnection;
 import de.juliandrees.simpleorm.persistence.sql.PostgreSqlConnection;
 import de.juliandrees.simpleorm.persistence.sql.SqlConnection;

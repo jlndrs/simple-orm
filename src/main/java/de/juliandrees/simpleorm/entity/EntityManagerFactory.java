@@ -1,4 +1,4 @@
-package de.juliandrees.simpleorm;
+package de.juliandrees.simpleorm.entity;
 
 /**
  * // TODO class description

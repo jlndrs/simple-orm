@@ -1,8 +1,8 @@
 package de.juliandrees.simpleorm.persistence;
 
-import de.juliandrees.simpleorm.EntityManager;
-import de.juliandrees.simpleorm.MappedEntity;
-import de.juliandrees.simpleorm.PropertyMapping;
+import de.juliandrees.simpleorm.entity.EntityManager;
+import de.juliandrees.simpleorm.entity.EntityScheme;
+import de.juliandrees.simpleorm.entity.PropertyMapping;
 import de.juliandrees.simpleorm.persistence.sql.SqlConnection;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -39,7 +39,7 @@ public abstract class AbstractPersistenceService implements PersistenceService {
 
     }
 
-    protected <T> T buildEntity(ResultSet resultSet, Class<?> entityClass, MappedEntity scheme) throws Exception {
+    protected <T> T buildEntity(ResultSet resultSet, Class<?> entityClass, EntityScheme scheme) throws Exception {
         T instance = null;
         if (resultSet.next()) {
             instance = (T) entityClass.getConstructor().newInstance();
@@ -51,7 +51,7 @@ public abstract class AbstractPersistenceService implements PersistenceService {
         return instance;
     }
 
-    protected <T> List<T> buildEntities(ResultSet resultSet, Class<?> entityClass, MappedEntity scheme) throws Exception {
+    protected <T> List<T> buildEntities(ResultSet resultSet, Class<?> entityClass, EntityScheme scheme) throws Exception {
         int rowCount = 0;
         if (resultSet != null) {
             resultSet.last();
@@ -65,12 +65,12 @@ public abstract class AbstractPersistenceService implements PersistenceService {
         return entities;
     }
 
-    protected MappedEntity getMappedEntity(Class<?> entityClass) {
-        Optional<MappedEntity> optionalEntity = getEntityManager().getMappedEntity(entityClass);
-        if (optionalEntity.isEmpty()) {
+    protected EntityScheme getEntityScheme(Class<?> entityClass) {
+        Optional<EntityScheme> optionalScheme = getEntityManager().getEntityScheme(entityClass);
+        if (optionalScheme.isEmpty()) {
             throw new IllegalArgumentException("entity class not mapped: " + entityClass.getName());
         }
-        return optionalEntity.get();
+        return optionalScheme.get();
     }
 
     @Override

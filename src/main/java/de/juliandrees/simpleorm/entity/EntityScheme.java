@@ -1,4 +1,4 @@
-package de.juliandrees.simpleorm;
+package de.juliandrees.simpleorm.entity;
 
 import lombok.Getter;
 
@@ -12,7 +12,7 @@ import java.util.Map;
  * @since 23.04.2020
  */
 @Getter
-public class MappedEntity {
+public class EntityScheme {
 
     private Map<String, PropertyMapping> propertyMappings = new HashMap<>();
     private PrimaryKeyPropertyMapping primaryKeyMapping;
@@ -20,7 +20,7 @@ public class MappedEntity {
     private final Class<?> entityClass;
     private final String entityName;
 
-    public MappedEntity(Class<?> entityClass, String entityName) {
+    public EntityScheme(Class<?> entityClass, String entityName) {
         this.entityClass = entityClass;
         this.entityName = entityName;
     }

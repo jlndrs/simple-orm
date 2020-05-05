@@ -1,4 +1,4 @@
-package de.juliandrees.simpleorm;
+package de.juliandrees.simpleorm.entity;
 
 import de.juliandrees.simpleorm.annotation.EntityMapping;
 import de.juliandrees.simpleorm.scanner.AbstractScanner;

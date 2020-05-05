@@ -1,4 +1,4 @@
-package de.juliandrees.simpleorm;
+package de.juliandrees.simpleorm.entity;
 
 import de.juliandrees.simpleorm.type.PropertyType;
 import lombok.Getter;

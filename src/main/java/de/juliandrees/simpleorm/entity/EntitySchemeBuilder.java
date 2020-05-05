@@ -1,4 +1,4 @@
-package de.juliandrees.simpleorm;
+package de.juliandrees.simpleorm.entity;
 
 import de.juliandrees.simpleorm.annotation.ColumnMapping;
 import de.juliandrees.simpleorm.annotation.EntityMapping;
@@ -9,7 +9,6 @@ import de.juliandrees.simpleorm.exception.MethodMappingException;
 import de.juliandrees.simpleorm.exception.NoPrimaryKeyException;
 import de.juliandrees.simpleorm.type.MethodPrefix;
 import de.juliandrees.simpleorm.type.PropertyType;
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.Annotation;
@@ -28,21 +27,17 @@ import java.util.Optional;
  * @author Julian Drees
  * @since 23.04.2020
  */
-class EntityAnalyzer {
-
-    @Getter
-    private List<MappedEntity> mappedEntities = new ArrayList<>();
+class EntitySchemeBuilder {
 
     private HashMap<Class<?>, List<Class<?>>> classMapping = new HashMap<>();
 
-    public EntityAnalyzer() { }
+    public EntitySchemeBuilder() { }
 
-    public void analyzeClass(Class<?> clazz) {
+    public EntityScheme newEntityScheme(Class<?> clazz) {
         classMapping.put(clazz, this.getClassHierarchy(clazz));
-        MappedEntity mappedEntity = new MappedEntity(clazz, this.determineEntityName(clazz));
+        EntityScheme entityScheme = new EntityScheme(clazz, this.determineEntityName(clazz));
         for (Method method : clazz.getMethods()) {
-            if (!method.getName().toLowerCase().startsWith(MethodPrefix.GET.name().toLowerCase()) ||
-                !this.isMappedColumn(method)) {
+            if (!method.getName().toLowerCase().startsWith(MethodPrefix.GET.name().toLowerCase()) || !this.isMappedColumn(method)) {
                 continue;
             }
 
@@ -55,10 +50,10 @@ class EntityAnalyzer {
             String databaseColumn = getMappedFieldName(field, method);
             PropertyMapping propertyMapping = new PropertyMapping(field.getType(), field.getName(), method, setter, propertyType);
 
-            mappedEntity.addMapping(databaseColumn, propertyMapping, pkAnnotation != null);
+            entityScheme.addMapping(databaseColumn, propertyMapping, pkAnnotation != null);
         }
-        checkPrimaryKey(mappedEntity);
-        mappedEntities.add(mappedEntity);
+        checkPrimaryKey(entityScheme);
+        return entityScheme;
     }
 
     /**
@@ -101,10 +96,6 @@ class EntityAnalyzer {
             throw new MethodMappingException("No field found for getter " + getter.getName() + " (" + clazz.getSimpleName() + ")");
         }
         return field;
-    }
-
-    public MappedEntity getMappedEntity(Class<?> entityClass) {
-        return mappedEntities.stream().filter(mappedEntity -> mappedEntity.getEntityClass().equals(entityClass)).findFirst().orElseThrow();
     }
 
     public boolean isMappedColumn(Method method) {
@@ -191,9 +182,9 @@ class EntityAnalyzer {
         return mapped;
     }
 
-    final void checkPrimaryKey(MappedEntity mappedEntity) {
-        if (mappedEntity.getPrimaryKeyMapping() == null) {
-            throw new NoPrimaryKeyException(mappedEntity.getEntityName());
+    final void checkPrimaryKey(EntityScheme entityScheme) {
+        if (entityScheme.getPrimaryKeyMapping() == null) {
+            throw new NoPrimaryKeyException(entityScheme.getEntityName());
         }
     }
 

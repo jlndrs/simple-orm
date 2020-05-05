@@ -1,7 +1,7 @@
 package de.juliandrees.simpleorm.persistence;
 
-import de.juliandrees.simpleorm.EntityManager;
-import de.juliandrees.simpleorm.EntityManagerFactory;
+import de.juliandrees.simpleorm.entity.EntityManager;
+import de.juliandrees.simpleorm.entity.EntityManagerFactory;
 import de.juliandrees.simpleorm.model.Currency;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;

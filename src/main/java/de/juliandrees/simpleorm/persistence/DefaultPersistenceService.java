@@ -1,7 +1,7 @@
 package de.juliandrees.simpleorm.persistence;
 
-import de.juliandrees.simpleorm.EntityManager;
-import de.juliandrees.simpleorm.MappedEntity;
+import de.juliandrees.simpleorm.entity.EntityManager;
+import de.juliandrees.simpleorm.entity.EntityScheme;
 import de.juliandrees.simpleorm.persistence.sql.SqlConnection;
 
 import java.sql.ResultSet;
@@ -26,12 +26,12 @@ class DefaultPersistenceService extends AbstractPersistenceService {
 
     @Override
     public <T> T find(Long id, Class<T> entityClass) {
-        MappedEntity mappedEntity = getMappedEntity(entityClass);
+        EntityScheme scheme = getEntityScheme(entityClass);
         try {
-            MappedEntity.PrimaryKeyPropertyMapping primaryKey = mappedEntity.getPrimaryKeyMapping();
+            EntityScheme.PrimaryKeyPropertyMapping primaryKey = scheme.getPrimaryKeyMapping();
 
-            ResultSet rs = getSqlConnection().result("select * from " + mappedEntity.getEntityName() + " where " + primaryKey.getDatabaseColumn() + " = ?;", id);
-            T instance = buildEntity(rs, entityClass, mappedEntity);
+            ResultSet rs = getSqlConnection().result("select * from " + scheme.getEntityName() + " where " + primaryKey.getDatabaseColumn() + " = ?;", id);
+            T instance = buildEntity(rs, entityClass, scheme);
             rs.close();
             return instance;
         } catch (Exception e) {
@@ -50,10 +50,10 @@ class DefaultPersistenceService extends AbstractPersistenceService {
 
     @Override
     public <T> List<T> loadAll(Class<T> entityClass) {
-        MappedEntity mappedEntity = getMappedEntity(entityClass);
+        EntityScheme scheme = getEntityScheme(entityClass);
         try {
-            ResultSet rs = getSqlConnection().result("select * from " + mappedEntity.getEntityName() + " order by " + mappedEntity.getPrimaryKeyMapping().getDatabaseColumn() + " asc;");
-            List<T> entities = buildEntities(rs, entityClass, mappedEntity);
+            ResultSet rs = getSqlConnection().result("select * from " + scheme.getEntityName() + " order by " + scheme.getPrimaryKeyMapping().getDatabaseColumn() + " asc;");
+            List<T> entities = buildEntities(rs, entityClass, scheme);
             rs.close();
             return entities;
         } catch (Exception ex) {
@@ -63,10 +63,10 @@ class DefaultPersistenceService extends AbstractPersistenceService {
 
     @Override
     public <T> List<T> loadAll(String column, Object value, Class<?> entityClass) {
-        MappedEntity mappedEntity = getMappedEntity(entityClass);
+        EntityScheme scheme = getEntityScheme(entityClass);
         try {
-            ResultSet resultSet = getSqlConnection().result("select * from " + mappedEntity.getEntityName() + " where " + column + " = ?;", value);
-            List<T> entities = buildEntities(resultSet, entityClass, mappedEntity);
+            ResultSet resultSet = getSqlConnection().result("select * from " + scheme.getEntityName() + " where " + column + " = ?;", value);
+            List<T> entities = buildEntities(resultSet, entityClass, scheme);
             resultSet.close();
             return entities;
         } catch (Exception ex) {
