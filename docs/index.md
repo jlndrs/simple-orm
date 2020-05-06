@@ -84,3 +84,60 @@ die für Simple-Orm relevant sein sollen.
 
 Um das Modul so einfach wie möglich zu halten, müssen einige Richtlinien beachtet werden, damit das Modul optimal genutzt werden kann.
 Diese "Richtlinien" beziehen sich auf die Annotationen.
+
+### EntityMapping
+Markiert eine Klasse als Entity-Schema.
+
+``` java
+@EntityMapping("testEntity")
+public class TestEntity {
+```
+
+Hinweise:
+- wenn kein String übergeben wird, wird der Klassenname als Entity-Name gewählt
+
+### SuperclassMapping
+Markiert eine Klasse als Superklasse einer Entität. So werden Methoden und Felder, die für
+Simple-Orm markiert wurden, ebenfalls beachtet.
+``` java
+@SuperclassMapping
+public class BaseEntity {
+```
+
+Hinweise:
+- kann auch an eine Klasse angehängt werden, die mit `@EntityMapping` markiert wurde
+- eine Klasse ohne `@EntityMapping` gilt nicht als Entity-Schema
+
+### ColumnMapping
+Markiert eine Methode als Getter für ein definiertes Feld.
+``` java
+private String name;
+
+@ColumnMapping("NAME_")
+public String getName() {
+    return name;
+}
+
+public void setName(String name) {
+    this.name = name;
+}
+```
+
+Hinweise:
+- kann nur bei Gettern definiert werden
+- Feld und Setter müssen in der Klasse definiert sein (keine Vererbung!)
+
+### PrimaryKeyColumn
+Markiert eine Methode als Getter für den PRIMARY KEY.
+``` java
+private Long id;
+
+@PrimaryKeyColumn
+@ColumnMapping
+public Long getId() {
+    return id;
+}
+````
+
+Hinweise:
+- gilt nur für Felder vom Typ long/Long
