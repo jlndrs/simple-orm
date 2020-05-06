@@ -1,6 +1,22 @@
 Simple-Orm ist ein einfaches object-relational-mapping Modul, mit welchem sich 
 Java-Datenobjekte (POJO, "Plain old Java object") in einer relationen Datenbank ablegen lassen.
 
+## Inhalt
+- [Download](#download)
+- [Abhängigkeiten](#abhngigkeiten)
+- [Erste Schritte](#erste-schritte)
+  - [EntityManager](#entitymanager)
+    - [Rekursiver Scan](#rekursiver-scan)
+  - [PersistenceService](#persistenceservice)
+    - [Eigene Implementierung](#eigene-implementierung)
+    - [Methoden](#methoden)
+  - [Datenbankanbindung](#datenbankanbindung)
+- [Annotationen](#annotationen)
+  - [EntityMapping](#entitymapping)
+  - [SuperclassMapping](#superclassmapping)
+  - [ColumnMapping](#columnmapping)
+  - [PrimaryKeyColumn](#primarykeycolumn)
+
 ## Download
 
 maven
@@ -43,7 +59,7 @@ EntityManager entityManager = EntityManagerFactory.scanPackage("YOURPACKAGE", tr
 Der EntityManager enthält die Schemata für die Entitäten, die einem Datensatz zugewiesen werden sollen.
 Dazu werden Packages gescannt und Klassen ausgewählt, die die Annotation `@EntityManager` haben.
 
-#### Option recursive
+#### Rekursiver Scan
 Mit der Option "recursive" kann festgelegt werden, ob auch Subpackages für den Scan einbezogen werden.
 Nützlich für Programme, wo sich die Entitäten in unterschiedlichen Packages befinden.
 
@@ -76,6 +92,9 @@ Die Klasse kann bei der Initialisierung übergeben werden:
 
 <T> List<T> loadAll(String column, Object value, Class<T> entityClass)
 ```
+
+### Datenbankanbindung
+Soon...
 
 ## Annotationen
 Simple-Orm basiert auf Java-Annotationen, die im Quellcode Typen (Klassen) und Methoden (**nur** Getter) zugewiesen werden.
