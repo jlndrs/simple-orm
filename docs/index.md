@@ -28,6 +28,55 @@ Die Bereitstellung des Moduls erfolgt nur über jitpack.io.
 - gson: [https://github.com/google/gson](https://github.com/google/gson) - 2.8.6
 - diverse jdbc Driver (postgres)
 
+## Erste Schritte
+Für die Nutzung gibt es zwei Zentrale Klassen: den `EntityManager` und den `PersistenceService`:
+
+``` java
+EntityManager entityManager = EntityManagerFactory.scanPackage("de.juliandrees.simpleorm.model", false);
+PersistenceService persistenceService = PersistenceServiceFactory.newInstance(entityManager);
+```
+
+### EntityManager
+``` java
+EntityManager entityManager = EntityManagerFactory.scanPackage("YOURPACKAGE", true);
+```
+Der EntityManager enthält die Schemata für die Entitäten, die einem Datensatz zugewiesen werden sollen.
+Dazu werden Packages gescannt und Klassen ausgewählt, die die Annotation `@EntityManager` haben.
+
+#### Option recursive
+Mit der Option "recursive" kann festgelegt werden, ob auch Subpackages für den Scan einbezogen werden.
+Nützlich für Programme, wo sich die Entitäten in unterschiedlichen Packages befinden.
+
+### PersistenceService
+```java 
+PersistenceService persistenceService = PersistenceServiceFactory.newInstance(entityManager);
+```
+Der PersistenceService ist die Schnittstelle zwischen Anwendung und Datenbank.
+
+#### Eigene Implementierung
+Wenn gewünscht, kann auch eine eigene Implementierung des PersistenceService genutzt werden.
+Dazu muss jedoch der PersistenceService von folgender Klasse ableiten:
+
+``` java
+public class CustomPersistenceService extends AbstractPersistenceService {
+```
+
+Die Klasse kann bei der Initialisierung übergeben werden:
+`PersistenceServiceFactory.newInstance(entityManager, CustomPersistenceService.class)`
+
+#### Methoden
+``` java
+<T> void persist(T entity)
+
+<T> T find(Long id, Class<T> entityClass)
+
+<T> T find(String column, Object value, Class<T> entityClass)
+
+<T> List<T> loadAll(Class<T> entityClass)
+
+<T> List<T> loadAll(String column, Object value, Class<T> entityClass)
+```
+
 ## Annotationen
 Simple-Orm basiert auf Java-Annotationen, die im Quellcode Typen (Klassen) und Methoden (**nur** Getter) zugewiesen werden.
 Auf Basis der genutzten Annotationen wird ein Schema generiert. So werden alle Typen und Methoden mit Annotationen "markiert",
