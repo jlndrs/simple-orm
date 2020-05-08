@@ -61,6 +61,6 @@ public interface PersistenceService extends Closeable {
      * @param <T> return type
      * @return all entities
      */
-    <T> List<T> loadAll(String column, Object value, Class<?> entityClass);
+    <T> List<T> loadAll(String column, Object value, Class<T> entityClass);
 
 }

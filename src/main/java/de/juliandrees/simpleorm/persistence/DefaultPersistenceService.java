@@ -4,7 +4,6 @@ import de.juliandrees.simpleorm.entity.EntityManager;
 import de.juliandrees.simpleorm.entity.EntityScheme;
 import de.juliandrees.simpleorm.persistence.sql.SqlConnection;
 
-import java.sql.ResultSet;
 import java.util.List;
 
 /**
@@ -27,50 +26,22 @@ class DefaultPersistenceService extends AbstractPersistenceService {
     @Override
     public <T> T find(Long id, Class<T> entityClass) {
         EntityScheme scheme = getEntityScheme(entityClass);
-        try {
-            EntityScheme.PrimaryKeyPropertyMapping primaryKey = scheme.getPrimaryKeyMapping();
-
-            ResultSet rs = getSqlConnection().result("select * from " + scheme.getEntityName() + " where " + primaryKey.getDatabaseColumn() + " = ?;", id);
-            T instance = buildEntity(rs, entityClass, scheme);
-            rs.close();
-            return instance;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        EntityScheme.PrimaryKeyPropertyMapping primaryKey = scheme.getPrimaryKeyMapping();
+        return getEntityPersistence().loadEntity(entityClass, "where " + primaryKey.getDatabaseColumn() + " = ?", id);
     }
 
     @Override
     public <T> T find(String column, Object value, Class<T> entityClass) {
-        List<T> entities = loadAll(column, value, entityClass);
-        if (entities.isEmpty()) {
-            return null;
-        }
-        return entities.get(0);
+        return getEntityPersistence().loadEntity(entityClass, "where " + column + " = ?", value);
     }
 
     @Override
     public <T> List<T> loadAll(Class<T> entityClass) {
-        EntityScheme scheme = getEntityScheme(entityClass);
-        try {
-            ResultSet rs = getSqlConnection().result("select * from " + scheme.getEntityName() + " order by " + scheme.getPrimaryKeyMapping().getDatabaseColumn() + " asc;");
-            List<T> entities = buildEntities(rs, entityClass, scheme);
-            rs.close();
-            return entities;
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
+        return getEntityPersistence().loadEntities(entityClass, "");
     }
 
     @Override
-    public <T> List<T> loadAll(String column, Object value, Class<?> entityClass) {
-        EntityScheme scheme = getEntityScheme(entityClass);
-        try {
-            ResultSet resultSet = getSqlConnection().result("select * from " + scheme.getEntityName() + " where " + column + " = ?;", value);
-            List<T> entities = buildEntities(resultSet, entityClass, scheme);
-            resultSet.close();
-            return entities;
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
+    public <T> List<T> loadAll(String column, Object value, Class<T> entityClass) {
+        return getEntityPersistence().loadEntities(entityClass, "where " + column + " = ?", value);
     }
 }

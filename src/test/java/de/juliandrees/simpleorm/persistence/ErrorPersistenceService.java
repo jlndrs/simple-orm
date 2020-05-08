@@ -1,6 +1,5 @@
 package de.juliandrees.simpleorm.persistence;
 
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -17,7 +16,7 @@ public class ErrorPersistenceService implements PersistenceService {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
 
     }
 
@@ -37,7 +36,7 @@ public class ErrorPersistenceService implements PersistenceService {
     }
 
     @Override
-    public <T> List<T> loadAll(String column, Object value, Class<?> entityClass) {
+    public <T> List<T> loadAll(String column, Object value, Class<T> entityClass) {
         return null;
     }
 

@@ -7,7 +7,6 @@ import de.juliandrees.simpleorm.persistence.sql.SqlConnection;
 import lombok.AccessLevel;
 import lombok.Getter;
 
-import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -25,6 +24,7 @@ import java.util.Optional;
 public abstract class AbstractPersistenceService implements PersistenceService {
 
     private final EntityManager entityManager;
+    private final EntityPersistence entityPersistence;
 
     @Getter(AccessLevel.PROTECTED)
     private final SqlConnection sqlConnection;
@@ -32,6 +32,7 @@ public abstract class AbstractPersistenceService implements PersistenceService {
     public AbstractPersistenceService(EntityManager entityManager, SqlConnection sqlConnection) {
         this.entityManager = entityManager;
         this.sqlConnection = sqlConnection;
+        this.entityPersistence = new EntityPersistence(entityManager, sqlConnection);
     }
 
     @Override
@@ -64,7 +65,6 @@ public abstract class AbstractPersistenceService implements PersistenceService {
         }
         return entities;
     }
-
     protected EntityScheme getEntityScheme(Class<?> entityClass) {
         Optional<EntityScheme> optionalScheme = getEntityManager().getEntityScheme(entityClass);
         if (optionalScheme.isEmpty()) {
@@ -74,7 +74,7 @@ public abstract class AbstractPersistenceService implements PersistenceService {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         try {
             sqlConnection.closeConnection();
         } catch (SQLException throwables) {
