@@ -5,8 +5,12 @@ import de.juliandrees.simpleorm.annotation.EntityMapping;
 import de.juliandrees.simpleorm.annotation.EnumMapping;
 import de.juliandrees.simpleorm.annotation.PrimaryKeyColumn;
 import de.juliandrees.simpleorm.annotation.SuperclassMapping;
+import de.juliandrees.simpleorm.annotation.handler.AnnotationHandler;
+import de.juliandrees.simpleorm.annotation.handler.EnumMappingHandler;
+import de.juliandrees.simpleorm.annotation.handler.PrimaryKeyColumnHandler;
 import de.juliandrees.simpleorm.exception.MethodMappingException;
 import de.juliandrees.simpleorm.exception.NoPrimaryKeyException;
+import de.juliandrees.simpleorm.exception.WrongAnnotationUsageException;
 import de.juliandrees.simpleorm.type.MethodPrefix;
 import de.juliandrees.simpleorm.type.PropertyType;
 import org.apache.commons.lang3.StringUtils;
@@ -30,29 +34,33 @@ import java.util.Optional;
 class EntitySchemeBuilder {
 
     private HashMap<Class<?>, List<Class<?>>> classMapping = new HashMap<>();
+    private List<AnnotationHandler<?>> annotationHandlers = new ArrayList<>();
 
-    public EntitySchemeBuilder() { }
+    public EntitySchemeBuilder() {
+        annotationHandlers.add(new EnumMappingHandler());
+        annotationHandlers.add(new PrimaryKeyColumnHandler());
+    }
 
-    public EntityScheme newEntityScheme(Class<?> clazz) {
+    public EntityScheme newEntityScheme(Class<?> clazz) throws WrongAnnotationUsageException {
         classMapping.put(clazz, this.getClassHierarchy(clazz));
         EntityScheme entityScheme = new EntityScheme(clazz, this.determineEntityName(clazz));
         for (Method method : clazz.getMethods()) {
             if (!method.getName().toLowerCase().startsWith(MethodPrefix.GET.name().toLowerCase()) || !this.isMappedColumn(method)) {
                 continue;
             }
-
-            Field field = this.getField(method, clazz);
-            Method setter = this.getSetter(method, clazz);
-
-            PrimaryKeyColumn pkAnnotation = method.getAnnotation(PrimaryKeyColumn.class);
-            PropertyType propertyType = determinePropertyType(field.getType());
-
-            String databaseColumn = getMappedFieldName(field, method);
-            PropertyMapping propertyMapping = new PropertyMapping(field.getType(), field.getName(), method, setter, propertyType);
+            PropertyMapping propertyMapping = newPropertyMapping(clazz, method);
+            String databaseColumn = getMappedFieldName(propertyMapping.getField(), propertyMapping.getGetter());
+            PrimaryKeyColumn pkAnnotation = propertyMapping.getGetter().getAnnotation(PrimaryKeyColumn.class);
 
             entityScheme.addMapping(databaseColumn, propertyMapping, pkAnnotation != null);
         }
         checkPrimaryKey(entityScheme);
+        for (AnnotationHandler<?> handler : annotationHandlers) {
+            Class<? extends Annotation> annotationType = handler.getAnnotationType();
+            for (PropertyMapping propertyMapping : entityScheme.getPropertyMappings().values()) {
+                handler.handle(propertyMapping.getGetter(), annotationType);
+            }
+        }
         return entityScheme;
     }
 
@@ -186,6 +194,14 @@ class EntitySchemeBuilder {
         if (entityScheme.getPrimaryKeyMapping() == null) {
             throw new NoPrimaryKeyException(entityScheme.getEntityName());
         }
+    }
+
+    final PropertyMapping newPropertyMapping(Class<?> entityClass, Method getter) {
+        Field field = this.getField(getter, entityClass);
+        Method setter = this.getSetter(getter, entityClass);
+        PropertyType propertyType = determinePropertyType(field.getType());
+
+        return new PropertyMapping(field.getType(), field.getName(), field, getter, setter, propertyType);
     }
 
 }

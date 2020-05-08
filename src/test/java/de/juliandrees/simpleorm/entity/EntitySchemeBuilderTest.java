@@ -1,5 +1,9 @@
 package de.juliandrees.simpleorm.entity;
 
+import de.juliandrees.simpleorm.entity.errormodel.NoEnumReturnTypeEntity;
+import de.juliandrees.simpleorm.entity.errormodel.NoPrimaryKeyEntity;
+import de.juliandrees.simpleorm.exception.NoPrimaryKeyException;
+import de.juliandrees.simpleorm.exception.WrongAnnotationUsageException;
 import de.juliandrees.simpleorm.model.BaseEntity;
 import de.juliandrees.simpleorm.model.TestEntity;
 import de.juliandrees.simpleorm.type.MethodPrefix;
@@ -11,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -59,6 +64,16 @@ public class EntitySchemeBuilderTest {
     public void getClassHierarchyTest() {
         List<Class<?>> classes = schemeBuilder.getClassHierarchy(TestEntity.class);
         assertEquals(2, classes.size());
+    }
+
+    @Test
+    public void onNoPrimaryKey() {
+        assertThrows(NoPrimaryKeyException.class, () -> schemeBuilder.newEntityScheme(NoPrimaryKeyEntity.class));
+    }
+
+    @Test
+    public void onNoEnumReturnType() {
+        assertThrows(WrongAnnotationUsageException.class, () -> schemeBuilder.newEntityScheme(NoEnumReturnTypeEntity.class));
     }
 
 }

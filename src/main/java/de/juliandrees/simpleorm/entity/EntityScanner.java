@@ -13,6 +13,6 @@ class EntityScanner extends AbstractScanner {
 
     @Override
     protected boolean isSuitable(Class<?> clazz) {
-        return clazz.getAnnotation(EntityMapping.class) != null;
+        return clazz.getAnnotation(EntityMapping.class) != null && !clazz.isInterface();
     }
 }

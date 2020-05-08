@@ -1,5 +1,7 @@
 package de.juliandrees.simpleorm.entity;
 
+import de.juliandrees.simpleorm.exception.WrongAnnotationUsageException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -23,12 +25,12 @@ public class EntityManager implements Manager {
     public void onInitialize() {
         EntitySchemeBuilder analyzer = new EntitySchemeBuilder();
         for (Class<?> entityClass : this.entityClasses) {
-            schemes.add(analyzer.newEntityScheme(entityClass));
+            try {
+                schemes.add(analyzer.newEntityScheme(entityClass));
+            } catch (WrongAnnotationUsageException e) {
+                e.printStackTrace();
+            }
         }
-    }
-
-    public List<Class<?>> getEntityClasses() {
-        return entityClasses;
     }
 
     public List<EntityScheme> getEntitySchemes() {
