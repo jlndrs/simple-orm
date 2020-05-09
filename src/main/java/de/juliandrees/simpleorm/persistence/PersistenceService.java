@@ -1,5 +1,7 @@
 package de.juliandrees.simpleorm.persistence;
 
+import de.juliandrees.simpleorm.persistence.query.QueryFactory;
+
 import java.io.Closeable;
 import java.util.List;
 
@@ -42,6 +44,8 @@ public interface PersistenceService extends Closeable {
      * @return the entity
      */
     <T> T find(String column, Object value, Class<T> entityClass);
+
+    <T> T find(Class<T> entityClass, QueryFactory queryFactory);
 
     /**
      * Fetches all entities.

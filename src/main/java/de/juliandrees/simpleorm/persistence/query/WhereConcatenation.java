@@ -1,5 +1,8 @@
 package de.juliandrees.simpleorm.persistence.query;
 
+import de.juliandrees.simpleorm.persistence.query.type.ConcatenationType;
+import de.juliandrees.simpleorm.persistence.query.type.EqualityType;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +12,7 @@ import java.util.List;
  * @author Julian Drees
  * @since 08.05.2020
  */
-class WhereConcatenation implements SqlQueryElement {
+public class WhereConcatenation implements SqlQueryElement {
 
     private final QueryFactory queryFactory;
     private final WhereClause firstNode;
@@ -23,18 +26,18 @@ class WhereConcatenation implements SqlQueryElement {
         this.tail = firstNode;
     }
 
-    public WhereConcatenation and(String column, WhereClause.EqualityComparator equalityComparator, Object value) {
-        addClause(column, equalityComparator, value, WhereClause.ClauseConcatenation.AND);
+    public WhereConcatenation and(String column, EqualityType equalityType, Object value) {
+        addClause(column, equalityType, value, ConcatenationType.AND);
         return this;
     }
 
-    public WhereConcatenation or(String column, WhereClause.EqualityComparator equalityComparator, Object value) {
-        addClause(column, equalityComparator, value, WhereClause.ClauseConcatenation.OR);
+    public WhereConcatenation or(String column, EqualityType equalityType, Object value) {
+        addClause(column, equalityType, value, ConcatenationType.OR);
         return this;
     }
 
-    void addClause(String column, WhereClause.EqualityComparator equalityComparator, Object value, WhereClause.ClauseConcatenation concatenation) {
-        WhereClause where = new WhereClause(column, value, equalityComparator);
+    void addClause(String column, EqualityType equalityType, Object value, ConcatenationType concatenation) {
+        WhereClause where = new WhereClause(column, value, equalityType);
         tail.setNext(where);
         tail.setConcatenation(concatenation);
         tail = where;

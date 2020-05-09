@@ -1,10 +1,12 @@
 package de.juliandrees.simpleorm.persistence.query;
 
+import de.juliandrees.simpleorm.persistence.query.type.EqualityType;
+import de.juliandrees.simpleorm.persistence.query.type.OrderType;
 import lombok.AccessLevel;
 import lombok.Getter;
 
 /**
- * // TODO class description
+ * Factory for sql select queries.
  *
  * @author Julian Drees
  * @since 08.05.2020
@@ -12,7 +14,7 @@ import lombok.Getter;
 @Getter(AccessLevel.PACKAGE)
 public final class QueryFactory implements SqlQueryElement {
 
-    private SelectFrom selectFrom;
+    private final SelectFrom selectFrom;
     private WhereConcatenation whereConcatenation;
     private OrderSpecifier orderBy;
     private LimitSpecifier limit;
@@ -29,13 +31,13 @@ public final class QueryFactory implements SqlQueryElement {
         return this;
     }
 
-    public QueryFactory orderBy(String orderBy, OrderSpecifier.OrderType orderType) {
+    public QueryFactory orderBy(String orderBy, OrderType orderType) {
         this.orderBy = new OrderSpecifier(orderBy, orderType);
         return this;
     }
 
-    public WhereConcatenation where(String column, WhereClause.EqualityComparator comparator, Object value) {
-        WhereClause whereClause = new WhereClause(column, value, comparator);
+    public WhereConcatenation where(String column, EqualityType equalityType, Object value) {
+        WhereClause whereClause = new WhereClause(column, value, equalityType);
         this.whereConcatenation = new WhereConcatenation(this, whereClause);
         return whereConcatenation;
     }
@@ -59,7 +61,10 @@ public final class QueryFactory implements SqlQueryElement {
 
     @Override
     public Object[] getParameters() {
-        return whereConcatenation.getParameters(); // only clause to allow parameter passing
+        if (whereConcatenation != null) {
+            return whereConcatenation.getParameters();
+        }
+        return new Object[0];
     }
 
     public static QueryFactory selectFrom(String entityName) {

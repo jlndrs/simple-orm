@@ -1,5 +1,7 @@
 package de.juliandrees.simpleorm.persistence;
 
+import de.juliandrees.simpleorm.persistence.query.QueryFactory;
+
 import java.util.List;
 
 /**
@@ -32,6 +34,11 @@ public class ErrorPersistenceService implements PersistenceService {
 
     @Override
     public <T> T find(String column, Object value, Class<T> entityClass) {
+        return null;
+    }
+
+    @Override
+    public <T> T find(Class<T> entityClass, QueryFactory queryFactory) {
         return null;
     }
 

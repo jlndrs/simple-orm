@@ -2,6 +2,8 @@ package de.juliandrees.simpleorm.persistence;
 
 import de.juliandrees.simpleorm.entity.EntityManager;
 import de.juliandrees.simpleorm.entity.EntityScheme;
+import de.juliandrees.simpleorm.persistence.query.QueryFactory;
+import de.juliandrees.simpleorm.persistence.query.type.EqualityType;
 import de.juliandrees.simpleorm.persistence.sql.SqlConnection;
 
 import java.util.List;
@@ -25,19 +27,27 @@ class DefaultPersistenceService extends AbstractPersistenceService {
 
     @Override
     public <T> T find(Long id, Class<T> entityClass) {
-        EntityScheme scheme = getEntityScheme(entityClass);
+        EntityScheme scheme = getEntityManager().getEntityScheme(entityClass);
         EntityScheme.PrimaryKeyPropertyMapping primaryKey = scheme.getPrimaryKeyMapping();
-        return getEntityPersistence().loadEntity(entityClass, "where " + primaryKey.getDatabaseColumn() + " = ?", id);
+        QueryFactory factory = QueryFactory.selectFrom(scheme.getEntityName()).where(primaryKey.getDatabaseColumn(), EqualityType.EQUALS, id).create().limit(1);
+        return find(entityClass, factory);
     }
 
     @Override
     public <T> T find(String column, Object value, Class<T> entityClass) {
-        return getEntityPersistence().loadEntity(entityClass, "where " + column + " = ?", value);
+        EntityScheme scheme = getEntityManager().getEntityScheme(entityClass);
+        return find(entityClass, QueryFactory.selectFrom(scheme.getEntityName()).where(column, EqualityType.EQUALS, value).create().limit(1));
+    }
+
+    @Override
+    public <T> T find(Class<T> entityClass, QueryFactory queryFactory) {
+        return getEntityPersistence().loadEntity(entityClass, queryFactory);
     }
 
     @Override
     public <T> List<T> loadAll(Class<T> entityClass) {
-        return getEntityPersistence().loadEntities(entityClass, "");
+        EntityScheme scheme = getEntityManager().getEntityScheme(entityClass);
+        return getEntityPersistence().loadEntities(entityClass, QueryFactory.selectFrom(scheme.getEntityName()));
     }
 
     @Override

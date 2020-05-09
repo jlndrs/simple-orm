@@ -1,5 +1,7 @@
 package de.juliandrees.simpleorm.persistence.query;
 
+import de.juliandrees.simpleorm.persistence.query.type.ConcatenationType;
+import de.juliandrees.simpleorm.persistence.query.type.EqualityType;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -17,49 +19,22 @@ class WhereClause implements SqlQueryElement {
 
     private final String column;
     private final Object value;
-    private final EqualityComparator equalityComparator;
+    private final EqualityType equalityType;
 
     @Setter
     private WhereClause next;
 
     @Setter
-    private ClauseConcatenation concatenation;
+    private ConcatenationType concatenation;
 
     @Override
     public String toSql() {
-        return String.format("%s %s ?", column, equalityComparator.getSql());
+        return String.format("%s %s ?", column, equalityType.getSql());
     }
 
     @Override
     public Object[] getParameters() {
         throw new UnsupportedOperationException("this method is not supported, please use getValue() instead");
-    }
-
-    @Getter
-    public enum EqualityComparator {
-
-        EQUALS("equals ="),
-        LIKE("like");
-
-        private final String sql;
-
-        EqualityComparator(String sql) {
-            this.sql = sql;
-        }
-    }
-
-    @Getter
-    public enum ClauseConcatenation {
-
-        AND("and"),
-        OR("or");
-
-        private final String sql;
-
-        ClauseConcatenation(String sql) {
-            this.sql = sql;
-        }
-
     }
 
 }

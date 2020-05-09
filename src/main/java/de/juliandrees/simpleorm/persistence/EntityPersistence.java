@@ -4,12 +4,13 @@ import de.juliandrees.simpleorm.entity.Entities;
 import de.juliandrees.simpleorm.entity.EntityManager;
 import de.juliandrees.simpleorm.entity.EntityScheme;
 import de.juliandrees.simpleorm.entity.PropertyMapping;
+import de.juliandrees.simpleorm.persistence.query.QueryFactory;
 import de.juliandrees.simpleorm.persistence.sql.SqlConnection;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * // TODO class description
@@ -27,44 +28,25 @@ class EntityPersistence {
         this.sqlConnection = sqlConnection;
     }
 
-    /**
-     * Lädt alle Entitäten der Tabelle.
-     *
-     * @param entityClass der Entitätstyp
-     * @param optionalWhere ein optionaler String für where
-     * @param parameters optionale Parameter
-     */
-    public <T> Entities<T> loadEntities(Class<T> entityClass, String optionalWhere, Object... parameters) {
-        EntityScheme scheme = getEntityScheme(entityClass);
-        EntityScheme.PrimaryKeyPropertyMapping primaryKey = scheme.getPrimaryKeyMapping();
+
+    public <T> T loadEntity(Class<T> entityClass, QueryFactory queryFactory) {
+        return loadEntities(entityClass, queryFactory.limit(1).toSql(), queryFactory.getParameters()).first();
+    }
+
+    public <T> List<T> loadEntities(Class<T> entityClass, QueryFactory queryFactory) {
+        return loadEntities(entityClass, queryFactory.toSql(), queryFactory.getParameters());
+    }
+
+    public <T> Entities<T> loadEntities(Class<T> entityClass, String query, Object... parameters) {
         Entities<T> entities = new Entities<>();
-        try (ResultSet rs = sqlConnection.result("select * from " + scheme.getEntityName() + " " + optionalWhere.trim() + " order by " + primaryKey.getDatabaseColumn() + " asc;", parameters)) {
-            while (rs.next()) {
-                entities.add(resultToEntity(entityClass, rs, scheme));
+        try (ResultSet resultSet = sqlConnection.result(query, parameters)) {
+            while (resultSet.next()) {
+                entities.add(resultToEntity(entityClass, resultSet, entityManager.getEntityScheme(entityClass)));
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            throw new RuntimeException(ex);
         }
         return entities;
-    }
-
-    /**
-     * Lädt eine Entität aus der Tabelle.
-     *
-     * @param entityClass der Entiätstyo
-     * @param optionalWhere ein optionaler String für where
-     * @param parameters optionale Parameter
-     */
-    public <T> T loadEntity(Class<T> entityClass, String optionalWhere, Object... parameters) {
-        return loadEntities(entityClass, optionalWhere + " limit 1", parameters).first();
-    }
-
-    protected EntityScheme getEntityScheme(Class<?> entityClass) {
-        Optional<EntityScheme> entityScheme = entityManager.getEntityScheme(entityClass);
-        if (entityScheme.isEmpty()) {
-            throw new IllegalArgumentException(entityClass.getSimpleName() + " is not mapped");
-        }
-        return entityScheme.get();
     }
 
     public <T> T resultToEntity(Class<T> entityClass, ResultSet resultSet, EntityScheme entityScheme) throws Exception {

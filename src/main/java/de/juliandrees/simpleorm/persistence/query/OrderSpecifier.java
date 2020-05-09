@@ -1,6 +1,6 @@
 package de.juliandrees.simpleorm.persistence.query;
 
-import lombok.Getter;
+import de.juliandrees.simpleorm.persistence.query.type.OrderType;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -25,17 +25,5 @@ class OrderSpecifier implements SqlQueryElement {
         throw new UnsupportedOperationException("parameters are not supposed to be passed in the order by clause.");
     }
 
-    @Getter
-    public enum OrderType {
 
-        ASCENDING("asc"),
-        DESCENDING("desc");
-
-        private final String sql;
-
-        OrderType(final String sql) {
-            this.sql = sql;
-        }
-
-    }
 }

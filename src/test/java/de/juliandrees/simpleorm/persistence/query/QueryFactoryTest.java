@@ -1,5 +1,7 @@
 package de.juliandrees.simpleorm.persistence.query;
 
+import de.juliandrees.simpleorm.persistence.query.type.EqualityType;
+import de.juliandrees.simpleorm.persistence.query.type.OrderType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -28,15 +30,15 @@ public class QueryFactoryTest {
 
     @Test
     public void onOrderByTest() {
-        queryFactory.orderBy("id", OrderSpecifier.OrderType.ASCENDING);
+        queryFactory.orderBy("id", OrderType.ASCENDING);
         assertEquals("order by id asc", queryFactory.getOrderBy().toSql());
     }
 
     @Test
     public void fullQueryFactoryTest() {
-        QueryFactory factory = queryFactory.where("name", WhereClause.EqualityComparator.EQUALS, "jlndrs").or("name", WhereClause.EqualityComparator.LIKE, "%jlndrs").create().limit(10).orderBy("id", OrderSpecifier.OrderType.ASCENDING);
+        QueryFactory factory = queryFactory.where("name", EqualityType.EQUALS, "jlndrs").or("name", EqualityType.LIKE, "%jlndrs").create().limit(10).orderBy("id", OrderType.ASCENDING);
 
-        assertEquals("select * from testEntity where name equals = ? or name like ? order by id asc limit 10;", factory.toSql());
+        assertEquals("select * from testEntity where name = ? or name like ? order by id asc limit 10;", factory.toSql());
         assertEquals(2, factory.getParameters().length);
     }
 
