@@ -94,7 +94,20 @@ Die Klasse kann bei der Initialisierung übergeben werden:
 ```
 
 ### Datenbankanbindung
-Soon...
+Eine JSON-Datei mit dem Namen "persistence.json" muss sich im Basisverzeichnis des Classpath befinden:
+
+``` json
+{
+  "credentials": {
+    "userName": "USERNAME",
+    "password": "PASSWORD"
+  },
+  "host": "localhost",
+  "database": "simple-orm",
+  "port": 5432,
+  "jdbcType": "postgresql"
+}
+```
 
 ## Annotationen
 Simple-Orm basiert auf Java-Annotationen, die im Quellcode Typen (Klassen) und Methoden (**nur** Getter) zugewiesen werden.
