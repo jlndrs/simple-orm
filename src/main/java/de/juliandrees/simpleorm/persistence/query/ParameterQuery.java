@@ -6,8 +6,8 @@ package de.juliandrees.simpleorm.persistence.query;
  * @author Julian Drees
  * @since 09.05.2020
  */
-public interface SqlQueryElement {
+public interface ParameterQuery {
 
-    String toSql();
+    Object[] getParameters();
 
 }

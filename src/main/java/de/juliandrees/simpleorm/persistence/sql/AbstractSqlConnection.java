@@ -20,6 +20,7 @@ public abstract class AbstractSqlConnection implements SqlConnection {
     private final String host, database, userName, password;
     private final int port;
     private final String jdbcType;
+    private final boolean showSql;
     private Connection connection;
 
     public AbstractSqlConnection(PersistenceConfig persistenceConfig) {
@@ -29,6 +30,7 @@ public abstract class AbstractSqlConnection implements SqlConnection {
         this.password = persistenceConfig.getCredentials().getPassword();
         this.port = persistenceConfig.getPort();
         this.jdbcType = persistenceConfig.getJdbcType();
+        this.showSql = persistenceConfig.isShowSql();
     }
 
     @Override
@@ -63,6 +65,9 @@ public abstract class AbstractSqlConnection implements SqlConnection {
 
     @Override
     public PreparedStatement prepare(String query, Object... parameters) throws SQLException {
+        if (showSql) {
+            System.out.println(query);
+        }
         PreparedStatement ps = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
         for (int i = 0; i < parameters.length; i++) {
             ps.setObject(i + 1, parameters[i]);

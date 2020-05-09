@@ -5,10 +5,15 @@ import de.juliandrees.simpleorm.entity.EntityManager;
 import de.juliandrees.simpleorm.entity.EntityScheme;
 import de.juliandrees.simpleorm.entity.PropertyMapping;
 import de.juliandrees.simpleorm.persistence.query.QueryFactory;
+import de.juliandrees.simpleorm.persistence.query.persist.InsertQueryFactory;
+import de.juliandrees.simpleorm.persistence.query.persist.UpdateQueryFactory;
+import de.juliandrees.simpleorm.persistence.query.select.SelectQueryFactory;
+import de.juliandrees.simpleorm.persistence.query.select.Where;
+import de.juliandrees.simpleorm.persistence.query.type.EqualityType;
 import de.juliandrees.simpleorm.persistence.sql.SqlConnection;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,13 +33,22 @@ class EntityPersistence {
         this.sqlConnection = sqlConnection;
     }
 
-
-    public <T> T loadEntity(Class<T> entityClass, QueryFactory queryFactory) {
-        return loadEntities(entityClass, queryFactory.limit(1).toSql(), queryFactory.getParameters()).first();
+    public <T> void persist(T entity) {
+        EntityScheme scheme = entityManager.getEntityScheme(entity.getClass());
+        try {
+            QueryFactory factory = entityToQuery(entity, scheme);
+            sqlConnection.update(factory.toSql(entityManager), factory.getParameters());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public <T> List<T> loadEntities(Class<T> entityClass, QueryFactory queryFactory) {
-        return loadEntities(entityClass, queryFactory.toSql(), queryFactory.getParameters());
+    public <T> T loadEntity(Class<T> entityClass, SelectQueryFactory selectQueryFactory) {
+        return loadEntities(entityClass, selectQueryFactory.limit(1).toSql(entityManager), selectQueryFactory.getParameters()).first();
+    }
+
+    public <T> List<T> loadEntities(Class<T> entityClass, SelectQueryFactory selectQueryFactory) {
+        return loadEntities(entityClass, selectQueryFactory.toSql(entityManager), selectQueryFactory.getParameters());
     }
 
     public <T> Entities<T> loadEntities(Class<T> entityClass, String query, Object... parameters) {
@@ -58,18 +72,28 @@ class EntityPersistence {
         return instance;
     }
 
-    public <T> String entityToQuery(T entity, EntityScheme entityScheme) {
-        return "";
+    public <T> QueryFactory entityToQuery(T entity, EntityScheme entityScheme) throws Exception {
+        HashMap<String, Object> values = getEntityValues(entity, entityScheme);
+        Long primaryKeyValue = (Long) entityScheme.getPrimaryKeyMapping().getPropertyMapping().getGetter().invoke(entity);
+        QueryFactory factory;
+        if (primaryKeyValue == null) {
+            factory = new InsertQueryFactory().insertInto(entityScheme.getEntityClass());
+            values.forEach(((InsertQueryFactory) factory)::addValue);
+        } else {
+            factory = new UpdateQueryFactory().updateTable(entityScheme.getEntityClass());
+            values.forEach(((UpdateQueryFactory) factory)::setValue);
+            ((UpdateQueryFactory) factory).where(Where.of(entityScheme.getPrimaryKeyMapping().getDatabaseColumn(), primaryKeyValue, EqualityType.EQUALS));
+        }
+        return factory;
     }
 
-    public int getRowCount(ResultSet resultSet) throws SQLException {
-        int rowCount = 0;
-        if (resultSet != null) {
-            resultSet.last();
-            rowCount = resultSet.getRow();
-            resultSet.beforeFirst();
+    private <T> HashMap<String, Object> getEntityValues(T entity, EntityScheme scheme) throws Exception {
+        HashMap<String, Object> values = new HashMap<>(scheme.getPropertyMappings().size());
+        for (Map.Entry<String, PropertyMapping> mapping : scheme.getPropertyMappings().entrySet()) {
+            Object value = mapping.getValue().getGetter().invoke(entity);
+            values.put(mapping.getKey(), value);
         }
-        return rowCount;
+        return values;
     }
 
 }

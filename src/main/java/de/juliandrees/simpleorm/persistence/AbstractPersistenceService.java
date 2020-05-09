@@ -1,6 +1,7 @@
 package de.juliandrees.simpleorm.persistence;
 
 import de.juliandrees.simpleorm.entity.EntityManager;
+import de.juliandrees.simpleorm.persistence.query.select.SelectQueryFactory;
 import de.juliandrees.simpleorm.persistence.sql.SqlConnection;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -26,6 +27,10 @@ public abstract class AbstractPersistenceService implements PersistenceService {
         this.entityManager = entityManager;
         this.sqlConnection = sqlConnection;
         this.entityPersistence = new EntityPersistence(entityManager, sqlConnection);
+    }
+
+    protected SelectQueryFactory createQueryFactory(Class<?> entityClass) {
+        return new SelectQueryFactory().selectFrom(entityClass);
     }
 
     @Override

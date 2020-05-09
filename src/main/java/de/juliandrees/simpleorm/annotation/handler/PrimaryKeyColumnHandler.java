@@ -21,9 +21,9 @@ public class PrimaryKeyColumnHandler extends AnnotationHandler<Method> {
     @Override
     protected void handle(Method getter, Annotation annotation) throws WrongAnnotationUsageException {
         Class<?> type = getter.getReturnType();
-        boolean isLong = type.equals(Long.class) || type.equals(long.class);
+        boolean isLong = type.equals(Long.class);
         if (!isLong) {
-            throw new WrongAnnotationUsageException("@PrimaryKeyColumn is only applicable to Long");
+            throw new WrongAnnotationUsageException("@PrimaryKeyColumn is only applicable to java.lang.Long");
         }
     }
 }

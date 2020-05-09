@@ -1,6 +1,6 @@
 package de.juliandrees.simpleorm.persistence;
 
-import de.juliandrees.simpleorm.persistence.query.QueryFactory;
+import de.juliandrees.simpleorm.persistence.query.select.SelectQueryFactory;
 
 import java.util.List;
 
@@ -38,7 +38,7 @@ public class ErrorPersistenceService implements PersistenceService {
     }
 
     @Override
-    public <T> T find(Class<T> entityClass, QueryFactory queryFactory) {
+    public <T> T find(Class<T> entityClass, SelectQueryFactory selectQueryFactory) {
         return null;
     }
 
@@ -50,5 +50,10 @@ public class ErrorPersistenceService implements PersistenceService {
     @Override
     public void onInitialize() {
 
+    }
+
+    @Override
+    public <T> List<T> loadAll(Class<T> entityClass, SelectQueryFactory selectQueryFactory) {
+        return null;
     }
 }

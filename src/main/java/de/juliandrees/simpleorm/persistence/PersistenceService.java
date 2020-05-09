@@ -1,6 +1,6 @@
 package de.juliandrees.simpleorm.persistence;
 
-import de.juliandrees.simpleorm.persistence.query.QueryFactory;
+import de.juliandrees.simpleorm.persistence.query.select.SelectQueryFactory;
 
 import java.io.Closeable;
 import java.util.List;
@@ -45,7 +45,15 @@ public interface PersistenceService extends Closeable {
      */
     <T> T find(String column, Object value, Class<T> entityClass);
 
-    <T> T find(Class<T> entityClass, QueryFactory queryFactory);
+    /**
+     * Fetch and entity from the database.
+     *
+     * @param entityClass class of the entity
+     * @param selectQueryFactory a query factory
+     * @param <T> return type
+     * @return the entity
+     */
+    <T> T find(Class<T> entityClass, SelectQueryFactory selectQueryFactory);
 
     /**
      * Fetches all entities.
@@ -57,7 +65,7 @@ public interface PersistenceService extends Closeable {
     <T> List<T> loadAll(Class<T> entityClass);
 
     /**
-     * Fetches all entites.
+     * Fetches all entities that match the condition.
      *
      * @param column the database field name
      * @param value the property to use for comparison
@@ -66,5 +74,15 @@ public interface PersistenceService extends Closeable {
      * @return all entities
      */
     <T> List<T> loadAll(String column, Object value, Class<T> entityClass);
+
+    /**
+     * Fetches all entities that match the condition.
+     *
+     * @param entityClass class of the entity
+     * @param selectQueryFactory a query factory (the condition)
+     * @param <T> return type
+     * @return the entities
+     */
+    <T> List<T> loadAll(Class<T> entityClass, SelectQueryFactory selectQueryFactory);
 
 }

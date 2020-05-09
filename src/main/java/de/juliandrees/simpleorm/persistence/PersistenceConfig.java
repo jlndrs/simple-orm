@@ -13,13 +13,15 @@ public class PersistenceConfig {
     private String database;
     private int port;
     private String jdbcType;
+    private boolean showSql;
 
-    PersistenceConfig(PersistenceCredentials credentials, String host, String database, int port, String jdbcType) {
+    PersistenceConfig(PersistenceCredentials credentials, String host, String database, int port, String jdbcType, boolean showSql) {
         this.credentials = credentials;
         this.host = host;
         this.database = database;
         this.port = port;
         this.jdbcType = jdbcType;
+        this.showSql = showSql;
     }
 
     public PersistenceCredentials getCredentials() {
@@ -60,6 +62,14 @@ public class PersistenceConfig {
 
     public void setJdbcType(String jdbcType) {
         this.jdbcType = jdbcType;
+    }
+
+    public boolean isShowSql() {
+        return showSql;
+    }
+
+    public void setShowSql(boolean showSql) {
+        this.showSql = showSql;
     }
 
     public static class PersistenceCredentials {
