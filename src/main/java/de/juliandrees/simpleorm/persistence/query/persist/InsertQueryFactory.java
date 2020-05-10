@@ -1,6 +1,7 @@
 package de.juliandrees.simpleorm.persistence.query.persist;
 
 import de.juliandrees.simpleorm.entity.EntityManager;
+import de.juliandrees.simpleorm.entity.EntityScheme;
 import de.juliandrees.simpleorm.persistence.query.QueryFactory;
 
 import java.util.ArrayList;
@@ -36,19 +37,41 @@ public class InsertQueryFactory implements QueryFactory {
             throw new IllegalArgumentException("no insert properties added");
         }
 
-        StringBuilder builder = new StringBuilder(insertInto.toSql(parameter.getEntityScheme(insertInto.getEntityClass()))).append(" ");
-        StringBuilder parameters = new StringBuilder();
+        EntityScheme scheme = parameter.getEntityScheme(insertInto.getEntityClass());
+        EntityScheme.PrimaryKeyPropertyMapping primaryKey = scheme.getPrimaryKeyMapping();
+        InsertValue pkValue = new InsertValue("", null);
         for (InsertValue insertValue : insertValues) {
-            builder.append(insertValue.getColumn()).append(", ");
-            parameters.append("?").append(", ");
-            this.parameters.add(insertValue.getValue());
+            if (insertValue.getColumn().equalsIgnoreCase(primaryKey.getDatabaseColumn())) {
+                pkValue = insertValue;
+            }
         }
-        String parameterList = parameters.toString().substring(0, parameters.toString().length() - 2);
-        return builder.toString().substring(0, builder.toString().length() - 2) + ") VALUES (" + parameterList + ");";
+        insertValues.remove(pkValue);
+        return buildSql(scheme, primaryKey, insertValues, pkValue);
     }
 
     @Override
     public Object[] getParameters() {
         return parameters.toArray(new Object[0]);
+    }
+
+    final String buildSql(EntityScheme scheme, EntityScheme.PrimaryKeyPropertyMapping primaryKey, List<InsertValue> values, InsertValue primaryKeyValue) {
+        StringBuilder columns = new StringBuilder();
+        StringBuilder parameters = new StringBuilder();
+        for (InsertValue value : values) {
+            columns.append(value.getColumn()).append(", ");
+            parameters.append("?").append(", ");
+            this.parameters.add(value.getValue());
+        }
+
+        String newIdQuery = "(select max(" + primaryKeyValue.getColumn() + ") + 1 from " + scheme.getEntityName() + ")";
+        return String.format("%s (%s, %s) VALUES (%s, %s);", insertInto.toSql(scheme), buildString(columns),
+                primaryKeyValue.getColumn(), buildString(parameters), newIdQuery);
+    }
+
+    final String buildString(StringBuilder builder) {
+        if (builder.length() < 2) {
+            return builder.toString();
+        }
+        return builder.toString().substring(0, builder.toString().length() - 2);
     }
 }

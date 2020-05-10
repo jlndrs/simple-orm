@@ -78,4 +78,13 @@ public class PersistenceServiceTest {
         assertNotNull(currency);
     }
 
+    @Test
+    public void persistTest() {
+        Currency currency = new Currency();
+        currency.setName("testName");
+        currency.setDescription("testDescription");
+        currency.setShortcut("test");
+        persistenceService.persist(currency);
+    }
+
 }

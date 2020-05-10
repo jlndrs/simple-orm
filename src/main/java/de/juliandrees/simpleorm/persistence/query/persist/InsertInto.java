@@ -23,6 +23,6 @@ class InsertInto implements ParameterizedSqlQueryElement<EntityScheme> {
 
     @Override
     public String toSql(EntityScheme parameter) {
-        return "insert into " + parameter.getEntityName() + "(";
+        return "insert into " + parameter.getEntityName() + "";
     }
 }

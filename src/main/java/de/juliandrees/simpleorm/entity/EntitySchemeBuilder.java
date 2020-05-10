@@ -45,7 +45,7 @@ class EntitySchemeBuilder {
         classMapping.put(clazz, this.getClassHierarchy(clazz));
         EntityScheme entityScheme = new EntityScheme(clazz, this.determineEntityName(clazz));
         for (Method method : clazz.getMethods()) {
-            if (!method.getName().toLowerCase().startsWith(MethodPrefix.GET.name().toLowerCase()) || !this.isMappedColumn(method)) {
+            if (!isGetter(method.getName()) || !this.isMappedColumn(method)) {
                 continue;
             }
             PropertyMapping propertyMapping = newPropertyMapping(clazz, method);
@@ -121,12 +121,12 @@ class EntitySchemeBuilder {
     }
 
     public String getFieldName(Method getter) {
-        if (!getter.getName().toLowerCase().startsWith(MethodPrefix.GET.name().toLowerCase())) {
+        if (!isGetter(getter.getName())) {
             throw new IllegalArgumentException("requires getter, but another method type is given.");
         }
 
         final String getterName = getter.getName();
-        String fieldName = getterName.substring(MethodPrefix.GET.name().length());
+        String fieldName = getterName.substring(getMethodPrefix(getterName).name().length());
         return Character.toLowerCase(fieldName.charAt(0)) + fieldName.substring(1);
     }
 
@@ -202,6 +202,21 @@ class EntitySchemeBuilder {
         PropertyType propertyType = determinePropertyType(field.getType());
 
         return new PropertyMapping(field.getType(), field.getName(), field, getter, setter, propertyType);
+    }
+
+    final boolean isGetter(String methodName) {
+        return methodName.toLowerCase().startsWith(MethodPrefix.GET.name().toLowerCase()) ||
+                       methodName.toLowerCase().startsWith(MethodPrefix.IS.name().toLowerCase());
+    }
+
+    final MethodPrefix getMethodPrefix(String methodName) {
+        if (methodName.toLowerCase().startsWith(MethodPrefix.GET.name().toLowerCase())) {
+            return MethodPrefix.GET;
+        } else if (methodName.toLowerCase().startsWith(MethodPrefix.IS.name().toLowerCase())) {
+            return MethodPrefix.IS;
+        } else {
+            return MethodPrefix.SET;
+        }
     }
 
 }

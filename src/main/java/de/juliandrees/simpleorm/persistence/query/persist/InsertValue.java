@@ -12,7 +12,7 @@ import de.juliandrees.simpleorm.persistence.query.SqlQueryElement;
 class InsertValue implements SqlQueryElement, ParameterQuery {
 
     private final String column;
-    private final Object value;
+    private Object value;
 
     InsertValue(String column, Object value) {
         this.column = column;
@@ -25,6 +25,10 @@ class InsertValue implements SqlQueryElement, ParameterQuery {
 
     public Object getValue() {
         return value;
+    }
+
+    void setValue(Object value) {
+        this.value = value;
     }
 
     @Override

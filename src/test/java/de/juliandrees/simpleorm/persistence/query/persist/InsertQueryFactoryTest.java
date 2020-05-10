@@ -1,13 +1,10 @@
 package de.juliandrees.simpleorm.persistence.query.persist;
 
 import de.juliandrees.simpleorm.entity.EntityManager;
-import de.juliandrees.simpleorm.entity.EntityScheme;
+import de.juliandrees.simpleorm.entity.EntityManagerFactory;
 import de.juliandrees.simpleorm.model.TestEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * // TODO class description
@@ -21,13 +18,13 @@ public class InsertQueryFactoryTest {
 
     @BeforeEach
     public void before() {
-        this.entityManager = mock(EntityManager.class);
-        when(entityManager.getEntityScheme(TestEntity.class)).thenReturn(new EntityScheme(TestEntity.class, "testEntity"));
+        entityManager = EntityManagerFactory.scanPackage(TestEntity.class, false);
+        entityManager.onInitialize();
     }
 
     @Test
     public void onTest() {
-        InsertQueryFactory insertQueryFactory = new InsertQueryFactory().insertInto(TestEntity.class).addValue("id", 1L);
+        InsertQueryFactory insertQueryFactory = new InsertQueryFactory().insertInto(TestEntity.class).addValue("id", 1L).addValue("compatible", true);
         String sql = insertQueryFactory.toSql(entityManager);
         System.out.println(sql);
     }
