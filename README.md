@@ -3,3 +3,7 @@ Simple-Orm ist ein einfaches object-relational-mapping Modul, mit welchem sich J
 
 ## Dokumentation
 Eine ausführliche Dokumentation von simple-orm finden sie [hier](https://jlndrs.github.io/simple-orm).
+
+## TODOs
+- Enumerations mappen (Name)
+- Andere Entitäten mappen

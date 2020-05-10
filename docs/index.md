@@ -3,7 +3,7 @@ Java-Datenobjekte (POJO, "Plain old Java object") in einer relationen Datenbank 
 
 ## Inhalt
 - [Download](#download)
-- [Abhängigkeiten](#abhngigkeiten)
+- [Abhängigkeiten](#abhängigkeiten)
 - [Erste Schritte](#erste-schritte)
   - [EntityManager](#entitymanager)
     - [Rekursiver Scan](#rekursiver-scan)
