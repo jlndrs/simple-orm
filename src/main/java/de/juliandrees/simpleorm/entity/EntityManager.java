@@ -37,7 +37,7 @@ public class EntityManager implements Manager {
         return this.schemes;
     }
 
-    public EntityScheme getEntityScheme(Class<?> entityClass) {
+    public <T> EntityScheme getEntityScheme(Class<T> entityClass) {
         Optional<EntityScheme> optionalScheme =  getEntitySchemes().stream().filter(scheme -> scheme.getEntityClass().equals(entityClass)).findFirst();
         if (optionalScheme.isEmpty()) {
             throw new IllegalArgumentException(entityClass.getSimpleName() + " is not mapped");
