@@ -63,7 +63,7 @@ public class InsertQueryFactory implements QueryFactory {
             this.parameters.add(value.getValue());
         }
 
-        String newIdQuery = "(select max(" + primaryKeyValue.getColumn() + ") + 1 from " + scheme.getEntityName() + ")";
+        String newIdQuery = "(select coalesce(max(" + primaryKeyValue.getColumn() + "), 0) + 1 from " + scheme.getEntityName() + ")";
         return String.format("%s (%s, %s) VALUES (%s, %s);", insertInto.toSql(scheme), buildString(columns),
                 primaryKeyValue.getColumn(), buildString(parameters), newIdQuery);
     }

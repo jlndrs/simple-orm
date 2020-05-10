@@ -51,7 +51,7 @@ class EntityPersistence {
         return loadEntities(entityClass, selectQueryFactory.toSql(entityManager), selectQueryFactory.getParameters());
     }
 
-    public <T> Entities<T> loadEntities(Class<T> entityClass, String query, Object... parameters) {
+    public synchronized  <T> Entities<T> loadEntities(Class<T> entityClass, String query, Object... parameters) {
         Entities<T> entities = new Entities<>();
         try (ResultSet resultSet = sqlConnection.result(query, parameters)) {
             while (resultSet.next()) {
