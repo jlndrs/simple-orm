@@ -22,6 +22,8 @@ public @interface EnumMapping {
 
     EnumType type();
 
+    Class<? extends Enum<?>> enumClass();
+
 }
 
 

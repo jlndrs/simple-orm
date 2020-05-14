@@ -8,6 +8,9 @@ import de.juliandrees.simpleorm.annotation.SuperclassMapping;
 import de.juliandrees.simpleorm.annotation.handler.AnnotationHandler;
 import de.juliandrees.simpleorm.annotation.handler.EnumMappingHandler;
 import de.juliandrees.simpleorm.annotation.handler.PrimaryKeyColumnHandler;
+import de.juliandrees.simpleorm.entity.property.EntityReferencePropertyMapping;
+import de.juliandrees.simpleorm.entity.property.EnumPropertyMapping;
+import de.juliandrees.simpleorm.entity.property.PropertyMapping;
 import de.juliandrees.simpleorm.exception.MethodMappingException;
 import de.juliandrees.simpleorm.exception.NoPrimaryKeyException;
 import de.juliandrees.simpleorm.exception.WrongAnnotationUsageException;
@@ -49,8 +52,8 @@ class EntitySchemeBuilder {
                 continue;
             }
             PropertyMapping propertyMapping = newPropertyMapping(clazz, method);
-            String databaseColumn = getMappedFieldName(propertyMapping.getField(), propertyMapping.getGetter());
-            PrimaryKeyColumn pkAnnotation = propertyMapping.getGetter().getAnnotation(PrimaryKeyColumn.class);
+            String databaseColumn = getMappedFieldName(propertyMapping.getFieldMapping().getField(), propertyMapping.getFieldMapping().getGetter());
+            PrimaryKeyColumn pkAnnotation = propertyMapping.getFieldMapping().getGetter().getAnnotation(PrimaryKeyColumn.class);
 
             entityScheme.addMapping(databaseColumn, propertyMapping, pkAnnotation != null);
         }
@@ -58,7 +61,7 @@ class EntitySchemeBuilder {
         for (AnnotationHandler<?> handler : annotationHandlers) {
             Class<? extends Annotation> annotationType = handler.getAnnotationType();
             for (PropertyMapping propertyMapping : entityScheme.getPropertyMappings().values()) {
-                handler.handle(propertyMapping.getGetter(), annotationType);
+                handler.handle(propertyMapping.getFieldMapping().getGetter(), annotationType);
             }
         }
         return entityScheme;
@@ -196,12 +199,33 @@ class EntitySchemeBuilder {
         }
     }
 
-    final PropertyMapping newPropertyMapping(Class<?> entityClass, Method getter) {
+    final FieldMapping newFieldMapping(Class<?> entityClass, Method getter) {
         Field field = this.getField(getter, entityClass);
         Method setter = this.getSetter(getter, entityClass);
         PropertyType propertyType = determinePropertyType(field.getType());
+        return new FieldMapping(field, getter, setter, propertyType);
+    }
 
-        return new PropertyMapping(field.getType(), field.getName(), field, getter, setter, propertyType);
+    final PropertyMapping newPropertyMapping(Class<?> entityClass, Method getter) {
+        FieldMapping fieldMapping = newFieldMapping(entityClass, getter);
+        PropertyMapping propertyMapping;
+        switch (fieldMapping.getPropertyType()) {
+            default:
+            case JAVA_DEFAULT:
+                propertyMapping = new PropertyMapping(fieldMapping) {
+                    @Override
+                    public void onInitialize() { }
+                };
+                break;
+            case ENTITY_REFERENCE:
+                propertyMapping = new EntityReferencePropertyMapping(fieldMapping);
+                break;
+            case ENUMERATION:
+                propertyMapping = new EnumPropertyMapping(fieldMapping);
+                break;
+        }
+        propertyMapping.onInitialize();
+        return propertyMapping;
     }
 
     final boolean isGetter(String methodName) {

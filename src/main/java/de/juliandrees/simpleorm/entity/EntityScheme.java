@@ -1,5 +1,6 @@
 package de.juliandrees.simpleorm.entity;
 
+import de.juliandrees.simpleorm.entity.property.PropertyMapping;
 import lombok.Getter;
 
 import java.util.HashMap;
@@ -14,11 +15,10 @@ import java.util.Map;
 @Getter
 public class EntityScheme {
 
-    private Map<String, PropertyMapping> propertyMappings = new HashMap<>();
-    private PrimaryKeyPropertyMapping primaryKeyMapping;
-
     private final Class<?> entityClass;
     private final String entityName;
+    private PrimaryKeyPropertyMapping primaryKeyMapping;
+    private final Map<String, PropertyMapping> propertyMappings = new HashMap<>();
 
     public EntityScheme(Class<?> entityClass, String entityName) {
         this.entityClass = entityClass;

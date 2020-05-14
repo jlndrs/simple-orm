@@ -3,7 +3,7 @@ package de.juliandrees.simpleorm.persistence;
 import de.juliandrees.simpleorm.entity.Entities;
 import de.juliandrees.simpleorm.entity.EntityManager;
 import de.juliandrees.simpleorm.entity.EntityScheme;
-import de.juliandrees.simpleorm.entity.PropertyMapping;
+import de.juliandrees.simpleorm.entity.property.PropertyMapping;
 import de.juliandrees.simpleorm.persistence.query.QueryFactory;
 import de.juliandrees.simpleorm.persistence.query.persist.InsertQueryFactory;
 import de.juliandrees.simpleorm.persistence.query.persist.UpdateQueryFactory;
@@ -11,6 +11,7 @@ import de.juliandrees.simpleorm.persistence.query.select.SelectQueryFactory;
 import de.juliandrees.simpleorm.persistence.query.select.Where;
 import de.juliandrees.simpleorm.persistence.query.type.EqualityType;
 import de.juliandrees.simpleorm.persistence.sql.SqlConnection;
+import lombok.Getter;
 
 import java.sql.ResultSet;
 import java.util.HashMap;
@@ -23,8 +24,9 @@ import java.util.Map;
  * @author Julian Drees
  * @since 08.05.2020
  */
-class EntityPersistence {
+public class EntityPersistence {
 
+    @Getter
     private final EntityManager entityManager;
     private final SqlConnection sqlConnection;
 
@@ -66,15 +68,15 @@ class EntityPersistence {
     public <T> T resultToEntity(Class<T> entityClass, ResultSet resultSet, EntityScheme entityScheme) throws Exception {
         T instance = entityClass.getConstructor().newInstance();
         for (Map.Entry<String, PropertyMapping> entrySet : entityScheme.getPropertyMappings().entrySet()) {
-            Object value = resultSet.getObject(entrySet.getKey(), entrySet.getValue().getFieldType());
-            entrySet.getValue().getSetter().invoke(instance, value);
+            Object value = entrySet.getValue().getEntityValue(resultSet.getObject(entrySet.getKey(), entrySet.getValue().getFieldType()), this);
+            entrySet.getValue().getFieldMapping().getSetter().invoke(instance, value);
         }
         return instance;
     }
 
     public <T> QueryFactory entityToQuery(T entity, EntityScheme entityScheme) throws Exception {
         HashMap<String, Object> values = getEntityValues(entity, entityScheme);
-        Long primaryKeyValue = (Long) entityScheme.getPrimaryKeyMapping().getPropertyMapping().getGetter().invoke(entity);
+        Long primaryKeyValue = (Long) entityScheme.getPrimaryKeyMapping().getPropertyMapping().getFieldMapping().getGetter().invoke(entity);
         QueryFactory factory;
         if (primaryKeyValue == null) {
             factory = new InsertQueryFactory().insertInto(entityScheme.getEntityClass());
@@ -90,8 +92,8 @@ class EntityPersistence {
     private <T> HashMap<String, Object> getEntityValues(T entity, EntityScheme scheme) throws Exception {
         HashMap<String, Object> values = new HashMap<>(scheme.getPropertyMappings().size());
         for (Map.Entry<String, PropertyMapping> mapping : scheme.getPropertyMappings().entrySet()) {
-            Object value = mapping.getValue().getGetter().invoke(entity);
-            values.put(mapping.getKey(), value);
+            Object value = mapping.getValue().getFieldMapping().getGetter().invoke(entity);
+            values.put(mapping.getKey(), mapping.getValue().getStorableValue(value, this));
         }
         return values;
     }

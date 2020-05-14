@@ -3,6 +3,8 @@ package de.juliandrees.simpleorm.persistence;
 import de.juliandrees.simpleorm.entity.EntityManager;
 import de.juliandrees.simpleorm.entity.EntityManagerFactory;
 import de.juliandrees.simpleorm.model.Currency;
+import de.juliandrees.simpleorm.model.Transaction;
+import de.juliandrees.simpleorm.model.TransactionType;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -10,9 +12,9 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
@@ -69,22 +71,28 @@ public class PersistenceServiceTest {
     @Test
     public void loadAllTest() {
         List<Currency> currencies = persistenceService.loadAll(Currency.class);
-        assertEquals(2, currencies.size());
+        assertTrue(currencies.size() > 0);
     }
 
     @Test
     public void findByColumnTest() {
-        Currency currency = persistenceService.find("shortcut", "BTC", Currency.class);
+        Currency currency = persistenceService.find("shortcut", "test", Currency.class);
         assertNotNull(currency);
     }
 
     @Test
-    public void persistTest() {
-        Currency currency = new Currency();
-        currency.setName("testName");
-        currency.setDescription("testDescription");
-        currency.setShortcut("test");
-        persistenceService.persist(currency);
+    public void persistEnumTest() {
+        Transaction transaction = new Transaction();
+        transaction.setAmount(1.0);
+        transaction.setPrice(8320.5);
+        transaction.setTransactionType(TransactionType.SELL);
+        persistenceService.persist(transaction);
+    }
+
+    @Test
+    public void findEntityReferenceTest() {
+        Transaction transaction = persistenceService.find(1L, Transaction.class);
+        assertNotNull(transaction);
     }
 
 }

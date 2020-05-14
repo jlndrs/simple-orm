@@ -18,7 +18,7 @@ public class NoEnumReturnTypeEntity extends BaseEntity {
 
     private TransactionType transactionType;
 
-    @EnumMapping(type = EnumType.NAME)
+    @EnumMapping(type = EnumType.NAME, enumClass = TransactionType.class)
     @ColumnMapping
     public int getTransactionType() {
         return 0;

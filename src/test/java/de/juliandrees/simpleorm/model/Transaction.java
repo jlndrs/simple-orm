@@ -15,11 +15,11 @@ import de.juliandrees.simpleorm.type.EnumType;
 public class Transaction extends BaseEntity {
 
     private Currency currency;
-    private double amount;
-    private double price;
+    private Double amount;
+    private Double price;
     private TransactionType transactionType;
 
-    @ColumnMapping
+    @ColumnMapping("currency_id")
     public Currency getCurrency() {
         return currency;
     }
@@ -46,8 +46,8 @@ public class Transaction extends BaseEntity {
         this.price = price;
     }
 
-    @EnumMapping(type = EnumType.NAME)
-    @ColumnMapping
+    @EnumMapping(type = EnumType.NAME, enumClass = TransactionType.class)
+    @ColumnMapping("type")
     public TransactionType getTransactionType() {
         return transactionType;
     }
